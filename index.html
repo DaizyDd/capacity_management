@@ -1,0 +1,299 @@
+{\rtf1\ansi\ansicpg936\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww29200\viewh17840\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 <!DOCTYPE html>\
+<html lang="zh-CN">\
+<head>\
+    <meta charset="UTF-8">\
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">\
+    <title>\uc0\u39033 \u30446 \u21608 \u26399 \u31649 \u29702 \u31995 \u32479 </title>\
+    <script src="https://cdn.tailwindcss.com"></script>\
+    <style>\
+        body \{ font-family: system-ui, -apple-system, sans-serif; background: #f8fafc; \}\
+        .calendar-grid \{ display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; \}\
+        .calendar-day \{\
+            aspect-ratio: 1; border-radius: 12px; background: white; border: 2px solid #e2e8f0;\
+            padding: 8px; position: relative; cursor: pointer; min-height: 100px;\
+        \}\
+        .calendar-day:hover \{ border-color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.1); \}\
+        .calendar-day.weekend \{ background: #f8fafc; \}\
+        .phase-pill \{\
+            font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; margin: 1px 0;\
+        \}\
+        .phase-proposal \{ background: #f59e0b; \}\
+        .phase-preparation \{ background: #3b82f6; \}\
+        .phase-sprint \{ background: #ef4444; \}\
+        .workload-badge \{\
+            position: absolute; top: 8px; right: 8px; width: 24px; height: 24px;\
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;\
+            font-size: 10px; font-weight: bold; color: white; background: #10b981;\
+        \}\
+        .workload-warning \{ background: #f59e0b; \}\
+        .workload-danger \{ background: #ef4444; \}\
+    </style>\
+</head>\
+<body class="text-slate-800">\
+\
+<nav class="bg-white border-b border-slate-200 p-4">\
+    <div class="flex justify-between items-center max-w-7xl mx-auto">\
+        <h1 class="text-xl font-bold text-indigo-600">\uc0\u39033 \u30446 \u21608 \u26399 \u31649 \u29702 \u31995 \u32479 </h1>\
+        <div class="flex gap-2">\
+            <button onclick="exportData()" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm">\uc0\u23548 \u20986 JSON</button>\
+            <label class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm cursor-pointer">\
+                \uc0\u23548 \u20837 JSON\
+                <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(this)">\
+            </label>\
+            <button onclick="addSample()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">\uc0\u28155 \u21152 \u31034 \u20363 </button>\
+        </div>\
+    </div>\
+</nav>\
+\
+<div class="flex h-screen">\
+    <!-- Sidebar -->\
+    <aside class="w-64 bg-white border-r border-slate-200 p-4 overflow-y-auto">\
+        <h3 class="font-bold text-sm text-slate-500 mb-4">\uc0\u20154 \u21592 \u21015 \u34920 </h3>\
+        <div id="personList" class="space-y-2"></div>\
+        \
+        <div class="mt-6 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">\
+            <p class="font-semibold mb-2">\uc0\u20351 \u29992 \u35828 \u26126 \u65306 </p>\
+            <ul class="list-disc list-inside text-xs space-y-1">\
+                <li>\uc0\u28857 \u20987 \u26085 \u26399 \u26597 \u30475 \u35814 \u24773 </li>\
+                <li>\uc0\u23548 \u20986 JSON\u22791 \u20221 \u25968 \u25454 </li>\
+                <li>\uc0\u23548 \u20837 JSON\u24674 \u22797 \u25968 \u25454 </li>\
+            </ul>\
+        </div>\
+    </aside>\
+\
+    <!-- Main -->\
+    <main class="flex-1 p-6 overflow-y-auto">\
+        <div class="flex justify-between items-center mb-4">\
+            <h2 id="currentMonth" class="text-2xl font-bold">2026\uc0\u24180 4\u26376 </h2>\
+            <div class="flex gap-2">\
+                <button onclick="changeMonth(-1)" class="px-3 py-1 border rounded hover:bg-slate-100">\uc0\u8592 </button>\
+                <button onclick="changeMonth(1)" class="px-3 py-1 border rounded hover:bg-slate-100">\uc0\u8594 </button>\
+            </div>\
+        </div>\
+        \
+        <div class="grid grid-cols-7 gap-2 mb-2 text-center text-sm font-semibold text-slate-500">\
+            <div>\uc0\u21608 \u26085 </div><div>\u21608 \u19968 </div><div>\u21608 \u20108 </div><div>\u21608 \u19977 </div><div>\u21608 \u22235 </div><div>\u21608 \u20116 </div><div>\u21608 \u20845 </div>\
+        </div>\
+        <div id="calendar" class="calendar-grid"></div>\
+        \
+        <div id="detail" class="mt-6 p-4 bg-white rounded-xl border hidden"></div>\
+    </main>\
+</div>\
+\
+<script>\
+const personnel = ['\uc0\u24352 \u20255 ', '\u26446 \u23068 ', '\u29579 \u24378 ', '\u21016 \u27915 ', '\u38472 \u38745 ', '\u29579 \u24635 \u30417 ', '\u26446 \u24635 \u30417 '];\
+let projects = [];\
+let currentDate = new Date(2026, 3, 1);\
+let selectedPerson = '\uc0\u24352 \u20255 ';\
+const STORAGE_KEY = 'pm_data_v1';\
+\
+// \uc0\u21021 \u22987 \u21270 \
+function init() \{\
+    const saved = localStorage.getItem(STORAGE_KEY);\
+    if (saved) \{\
+        projects = JSON.parse(saved).projects || [];\
+    \}\
+    renderPersonList();\
+    renderCalendar();\
+\}\
+\
+function renderPersonList() \{\
+    const div = document.getElementById('personList');\
+    div.innerHTML = personnel.map(p => `\
+        <div onclick="selectPerson('$\{p\}')" class="p-3 rounded-lg cursor-pointer $\{p === selectedPerson ? 'bg-indigo-100 border-indigo-500 border' : 'bg-slate-50 hover:bg-slate-100'\}">\
+            <div class="font-semibold">$\{p\}</div>\
+            <div class="text-xs text-slate-500">\uc0\u36127 \u33655 : $\{calculateLoad(p)\}%</div>\
+        </div>\
+    `).join('');\
+\}\
+\
+function calculateLoad(person) \{\
+    let total = 0, days = 0;\
+    const year = currentDate.getFullYear();\
+    const month = currentDate.getMonth();\
+    const daysInMonth = new Date(year, month + 1, 0).getDate();\
+    \
+    for (let d = 1; d <= daysInMonth; d++) \{\
+        const date = new Date(year, month, d);\
+        if (date.getDay() === 0 || date.getDay() === 6) continue;\
+        \
+        const load = getDayLoad(date, person);\
+        total += load;\
+        days++;\
+    \}\
+    return days > 0 ? Math.round(total / days) : 0;\
+\}\
+\
+function getDayLoad(date, person) \{\
+    const dateStr = formatDate(date);\
+    let load = 0;\
+    projects.forEach(p => \{\
+        if (p.owner !== person) return;\
+        Object.values(p.phases).forEach(phase => \{\
+            if (dateStr >= phase.start && dateStr <= phase.end) \{\
+                load += phase.load;\
+            \}\
+        \});\
+    \});\
+    return load;\
+\}\
+\
+function formatDate(d) \{\
+    return d.toISOString().split('T')[0];\
+\}\
+\
+function selectPerson(p) \{\
+    selectedPerson = p;\
+    renderPersonList();\
+    renderCalendar();\
+\}\
+\
+function changeMonth(delta) \{\
+    currentDate.setMonth(currentDate.getMonth() + delta);\
+    renderCalendar();\
+\}\
+\
+function renderCalendar() \{\
+    const year = currentDate.getFullYear();\
+    const month = currentDate.getMonth();\
+    document.getElementById('currentMonth').textContent = `$\{year\}\uc0\u24180 $\{month + 1\}\u26376 `;\
+    \
+    const firstDay = new Date(year, month, 1).getDay();\
+    const daysInMonth = new Date(year, month + 1, 0).getDate();\
+    const grid = document.getElementById('calendar');\
+    grid.innerHTML = '';\
+    \
+    // Empty cells\
+    for (let i = 0; i < firstDay; i++) \{\
+        grid.appendChild(createDay(0, true));\
+    \}\
+    \
+    // Days\
+    for (let d = 1; d <= daysInMonth; d++) \{\
+        const date = new Date(year, month, d);\
+        grid.appendChild(createDay(d, false, date));\
+    \}\
+\}\
+\
+function createDay(day, empty, date) \{\
+    const div = document.createElement('div');\
+    div.className = 'calendar-day' + (empty ? ' other-month' : '') + (date && (date.getDay() === 0 || date.getDay() === 6) ? ' weekend' : '');\
+    \
+    if (empty) return div;\
+    \
+    const load = getDayLoad(date, selectedPerson);\
+    const dayProjects = getDayProjects(date, selectedPerson);\
+    \
+    div.innerHTML = `\
+        <div class="font-bold text-sm mb-1">$\{day\}</div>\
+        $\{load > 0 ? `<div class="workload-badge $\{load > 100 ? 'workload-danger' : load > 80 ? 'workload-warning' : ''\}">$\{load\}</div>` : ''\}\
+        <div class="mt-4 space-y-1">\
+            $\{dayProjects.slice(0, 3).map(p => `\
+                <div class="phase-pill $\{p.phase === 'proposal' ? 'phase-proposal' : p.phase === 'preparation' ? 'phase-preparation' : 'phase-sprint'\}">\
+                    $\{p.name.substring(0, 4)\}\
+                </div>\
+            `).join('')\}\
+        </div>\
+    `;\
+    \
+    div.onclick = () => showDetail(date, dayProjects);\
+    return div;\
+\}\
+\
+function getDayProjects(date, person) \{\
+    const dateStr = formatDate(date);\
+    const list = [];\
+    projects.forEach(p => \{\
+        if (p.owner !== person) return;\
+        Object.entries(p.phases).forEach(([phaseName, phase]) => \{\
+            if (dateStr >= phase.start && dateStr <= phase.end) \{\
+                list.push(\{ name: p.name, phase: phaseName, load: phase.load \});\
+            \}\
+        \});\
+    \});\
+    return list;\
+\}\
+\
+function showDetail(date, list) \{\
+    const div = document.getElementById('detail');\
+    div.classList.remove('hidden');\
+    div.innerHTML = `\
+        <h3 class="font-bold text-lg mb-3">$\{date.getMonth() + 1\}\uc0\u26376 $\{date.getDate()\}\u26085  \u35814 \u24773 </h3>\
+        $\{list.length === 0 ? '<p class="text-slate-500">\uc0\u26080 \u39033 \u30446 </p>' : list.map(p => `\
+            <div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2">\
+                <span>$\{p.name\} - $\{p.phase\}</span>\
+                <span class="font-bold $\{p.load > 100 ? 'text-red-600' : ''\}">$\{p.load\}%</span>\
+            </div>\
+        `).join('')\}\
+    `;\
+\}\
+\
+function addSample() \{\
+    projects = [\
+        \{\
+            id: 1, name: '\uc0\u25968 \u23383 \u21270 \u36716 \u22411 ', owner: '\u24352 \u20255 ',\
+            phases: \{\
+                proposal: \{ start: '2026-04-01', end: '2026-04-14', load: 90 \},\
+                preparation: \{ start: '2026-04-15', end: '2026-05-15', load: 50 \},\
+                sprint: \{ start: '2026-05-16', end: '2026-05-30', load: 110 \}\
+            \}\
+        \},\
+        \{\
+            id: 2, name: '\uc0\u31995 \u32479 \u21319 \u32423 ', owner: '\u26446 \u23068 ',\
+            phases: \{\
+                proposal: \{ start: '2026-04-10', end: '2026-04-25', load: 80 \},\
+                preparation: \{ start: '2026-04-26', end: '2026-06-05', load: 60 \},\
+                sprint: \{ start: '2026-06-06', end: '2026-06-19', load: 100 \}\
+            \}\
+        \}\
+    ];\
+    saveData();\
+    renderPersonList();\
+    renderCalendar();\
+    alert('\uc0\u24050 \u28155 \u21152 \u31034 \u20363 \u25968 \u25454 ');\
+\}\
+\
+function exportData() \{\
+    const data = \{ projects, exportTime: new Date().toISOString() \};\
+    const blob = new Blob([JSON.stringify(data, null, 2)], \{ type: 'application/json' \});\
+    const url = URL.createObjectURL(blob);\
+    const a = document.createElement('a');\
+    a.href = url;\
+    a.download = `\uc0\u22791 \u20221 _$\{new Date().toLocaleDateString()\}.json`;\
+    a.click();\
+    URL.revokeObjectURL(url);\
+\}\
+\
+function importData(input) \{\
+    const file = input.files[0];\
+    if (!file) return;\
+    const reader = new FileReader();\
+    reader.onload = function(e) \{\
+        const data = JSON.parse(e.target.result);\
+        projects = data.projects || [];\
+        saveData();\
+        renderPersonList();\
+        renderCalendar();\
+        alert('\uc0\u23548 \u20837 \u25104 \u21151 ');\
+    \};\
+    reader.readAsText(file);\
+    input.value = '';\
+\}\
+\
+function saveData() \{\
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(\{ projects \}));\
+\}\
+\
+// \uc0\u21551 \u21160 \
+init();\
+</script>\
+\
+</body>\
+</html>}
