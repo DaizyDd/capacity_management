@@ -14,12 +14,14 @@
         }
         .calendar-day:hover { border-color: #3b82f6; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .calendar-day.weekend { background: #f8fafc; }
+        .calendar-day.leave { background: #f3f4f6; border-color: #d1d5db; }
         .phase-pill {
             font-size: 10px; padding: 2px 6px; border-radius: 4px; color: white; margin: 1px 0;
         }
         .phase-proposal { background: #f59e0b; }
         .phase-preparation { background: #3b82f6; }
         .phase-sprint { background: #ef4444; }
+        .phase-leave { background: #9ca3af; }
         .workload-badge {
             position: absolute; top: 8px; right: 8px; width: 24px; height: 24px;
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
@@ -34,8 +36,14 @@
         .modal.active { display: flex; }
         .modal-content {
             background: white; padding: 24px; border-radius: 16px;
-            width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
         }
+        .role-tag {
+            display: inline-block; padding: 2px 8px; border-radius: 12px;
+            font-size: 11px; font-weight: 500; margin-left: 4px;
+        }
+        .role-pm { background: #dbeafe; color: #1e40af; }
+        .role-client { background: #fce7f3; color: #9d174d; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -58,12 +66,29 @@
 
 <div class="flex h-screen">
     <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-slate-200 p-4 overflow-y-auto">
+    <aside class="w-72 bg-white border-r border-slate-200 p-4 overflow-y-auto">
         <h3 class="font-bold text-sm text-slate-500 mb-4">人员列表</h3>
-        <div id="personList" class="space-y-2"></div>
+        <div class="mb-4">
+            <div class="text-xs text-slate-400 mb-2">项目经理（对内）</div>
+            <div id="pmList" class="space-y-2"></div>
+        </div>
+        <div class="mb-4">
+            <div class="text-xs text-slate-400 mb-2">客户负责人（对外）</div>
+            <div id="clientList" class="space-y-2"></div>
+        </div>
         
-        <div class="mt-6 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
-            <p class="font-semibold mb-2">当前项目</p>
+        <div class="mt-6 p-3 bg-slate-50 rounded-lg text-sm">
+            <p class="font-semibold mb-2 text-slate-700">阶段定义</p>
+            <div class="space-y-1 text-xs text-slate-600">
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span>方案阶段（50%）</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span>准备阶段（30-50%）</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span>冲击阶段（80%）</div>
+                <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-400"></span>休假（0%）</div>
+            </div>
+        </div>
+        
+        <div class="mt-4 p-3 bg-blue-50 rounded-lg text-sm">
+            <p class="font-semibold mb-2 text-blue-800">当前项目</p>
             <div id="projectList" class="space-y-2 text-xs"></div>
         </div>
     </aside>
@@ -101,48 +126,56 @@
                 <input type="text" id="projName" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="例如：数字化转型项目">
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">负责人</label>
-                <select id="projOwner" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"></select>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">项目经理（对内）</label>
+                    <select id="projPM" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">客户负责人（对外）</label>
+                    <select id="projClient" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"></select>
+                </div>
             </div>
             
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <label class="block text-sm font-medium text-amber-900 mb-2">阶段1：方案阶段（高节奏 80-100%）</label>
-                <div class="grid grid-cols-2 gap-2 mb-2">
+                <label class="block text-sm font-medium text-amber-900 mb-2">阶段1：方案阶段（50%）</label>
+                <div class="grid grid-cols-2 gap-2">
                     <input type="date" id="phase1Start" class="border border-amber-300 rounded px-2 py-1 text-sm">
                     <input type="date" id="phase1End" class="border border-amber-300 rounded px-2 py-1 text-sm">
                 </div>
-                <select id="phase1Load" class="w-full border border-amber-300 rounded px-2 py-1 text-sm">
-                    <option value="80">80%</option>
-                    <option value="90" selected>90%</option>
-                    <option value="100">100%</option>
-                </select>
+                <input type="hidden" id="phase1Load" value="50">
             </div>
             
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <label class="block text-sm font-medium text-blue-900 mb-2">阶段2：准备阶段（可控 30-70%）</label>
+                <label class="block text-sm font-medium text-blue-900 mb-2">阶段2：准备阶段（30-50%）</label>
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <input type="date" id="phase2Start" class="border border-blue-300 rounded px-2 py-1 text-sm">
                     <input type="date" id="phase2End" class="border border-blue-300 rounded px-2 py-1 text-sm">
                 </div>
                 <select id="phase2Load" class="w-full border border-blue-300 rounded px-2 py-1 text-sm">
                     <option value="30">30%</option>
-                    <option value="50" selected>50%</option>
-                    <option value="70">70%</option>
+                    <option value="40" selected>40%</option>
+                    <option value="50">50%</option>
                 </select>
             </div>
             
             <div class="bg-red-50 border border-red-200 rounded-lg p-3">
-                <label class="block text-sm font-medium text-red-900 mb-2">阶段3：冲击阶段（极高 100-120%）</label>
-                <div class="grid grid-cols-2 gap-2 mb-2">
+                <label class="block text-sm font-medium text-red-900 mb-2">阶段3：冲击阶段（80%）</label>
+                <div class="grid grid-cols-2 gap-2">
                     <input type="date" id="phase3Start" class="border border-red-300 rounded px-2 py-1 text-sm">
                     <input type="date" id="phase3End" class="border border-red-300 rounded px-2 py-1 text-sm">
                 </div>
-                <select id="phase3Load" class="w-full border border-red-300 rounded px-2 py-1 text-sm">
-                    <option value="100">100%</option>
-                    <option value="110" selected>110%</option>
-                    <option value="120">120%</option>
-                </select>
+                <input type="hidden" id="phase3Load" value="80">
+            </div>
+            
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                <label class="block text-sm font-medium text-gray-700 mb-2">休假/缺勤（0%）</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" id="leaveStart" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                    <input type="date" id="leaveEnd" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">此期间工作负荷为0%</p>
+                <input type="hidden" id="leaveLoad" value="0">
             </div>
         </div>
         
@@ -154,44 +187,44 @@
 </div>
 
 <script>
-const personnel = ['刘絮', 'Huanhuan', '潘潘', 'Kathy', '思璇', 'Miles',];
+const pmList = ['刘絮', 'Huanhuan', '潘潘', 'Kathy', '思璇', 'Miles'];
+const clientList = ['刘絮', 'huanhuan', 'Daizy'];
 let projects = [];
 let currentDate = new Date(2026, 3, 1);
-let selectedPerson = personnel[0];
-const STORAGE_KEY = 'pm_data_v2';
+let selectedPerson = pmList[0];
+let selectedRole = 'pm';
+const STORAGE_KEY = 'pm_data_v3';
 
 function init() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) projects = JSON.parse(saved).projects || [];
-    renderPersonList();
+    renderPersonLists();
     renderProjectList();
     renderCalendar();
-    updateModalOwners();
+    updateModalOptions();
 }
 
-function renderPersonList() {
-    const div = document.getElementById('personList');
-    div.innerHTML = personnel.map(p => `
-        <div onclick="selectPerson('${p}')" class="p-3 rounded-lg cursor-pointer ${p === selectedPerson ? 'bg-indigo-100 border-indigo-500 border' : 'bg-slate-50 hover:bg-slate-100'}">
+function renderPersonLists() {
+    // PM List
+    const pmDiv = document.getElementById('pmList');
+    pmDiv.innerHTML = pmList.map(p => `
+        <div onclick="selectPerson('${p}', 'pm')" class="p-3 rounded-lg cursor-pointer ${p === selectedPerson && selectedRole === 'pm' ? 'bg-indigo-100 border-indigo-500 border' : 'bg-slate-50 hover:bg-slate-100'}">
             <div class="font-semibold">${p}</div>
-            <div class="text-xs text-slate-500">负荷: ${calculateLoad(p)}%</div>
+            <div class="text-xs text-slate-500">负荷: ${calculateLoad(p, 'pm')}%</div>
+        </div>
+    `).join('');
+    
+    // Client List
+    const clientDiv = document.getElementById('clientList');
+    clientDiv.innerHTML = clientList.map(p => `
+        <div onclick="selectPerson('${p}', 'client')" class="p-3 rounded-lg cursor-pointer ${p === selectedPerson && selectedRole === 'client' ? 'bg-pink-100 border-pink-500 border' : 'bg-slate-50 hover:bg-slate-100'}">
+            <div class="font-semibold">${p}</div>
+            <div class="text-xs text-slate-500">负荷: ${calculateLoad(p, 'client')}%</div>
         </div>
     `).join('');
 }
 
-function renderProjectList() {
-    const div = document.getElementById('projectList');
-    const personProjects = projects.filter(p => p.owner === selectedPerson);
-    div.innerHTML = personProjects.length === 0 ? '<p class="text-slate-400">暂无项目</p>' : 
-        personProjects.map(p => `
-            <div class="bg-white p-2 rounded border">
-                <div class="font-medium">${p.name}</div>
-                <button onclick="deleteProject(${p.id})" class="text-red-500 text-xs mt-1 hover:underline">删除</button>
-            </div>
-        `).join('');
-}
-
-function calculateLoad(person) {
+function calculateLoad(person, role) {
     let total = 0, days = 0;
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -200,19 +233,23 @@ function calculateLoad(person) {
     for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, month, d);
         if (date.getDay() === 0 || date.getDay() === 6) continue;
-        total += getDayLoad(date, person);
+        total += getDayLoad(date, person, role);
         days++;
     }
     return days > 0 ? Math.round(total / days) : 0;
 }
 
-function getDayLoad(date, person) {
+function getDayLoad(date, person, role) {
     const dateStr = formatDate(date);
     let load = 0;
     projects.forEach(p => {
-        if (p.owner !== person) return;
-        Object.values(p.phases).forEach(phase => {
-            if (dateStr >= phase.start && dateStr <= phase.end) load += phase.load;
+        const personField = role === 'pm' ? 'pm' : 'client';
+        if (p[personField] !== person) return;
+        
+        Object.entries(p.phases).forEach(([phaseName, phase]) => {
+            if (dateStr >= phase.start && dateStr <= phase.end) {
+                load += phase.load;
+            }
         });
     });
     return load;
@@ -222,9 +259,10 @@ function formatDate(d) {
     return d.toISOString().split('T')[0];
 }
 
-function selectPerson(p) {
+function selectPerson(p, role) {
     selectedPerson = p;
-    renderPersonList();
+    selectedRole = role;
+    renderPersonLists();
     renderProjectList();
     renderCalendar();
 }
@@ -232,7 +270,7 @@ function selectPerson(p) {
 function changeMonth(delta) {
     currentDate.setMonth(currentDate.getMonth() + delta);
     renderCalendar();
-    renderPersonList();
+    renderPersonLists();
 }
 
 function renderCalendar() {
@@ -259,17 +297,20 @@ function renderCalendar() {
 
 function createDay(day, date) {
     const div = document.createElement('div');
-    div.className = 'calendar-day' + (date.getDay() === 0 || date.getDay() === 6 ? ' weekend' : '');
+    const load = getDayLoad(date, selectedPerson, selectedRole);
+    const dayProjects = getDayProjects(date, selectedPerson, selectedRole);
+    const isLeave = dayProjects.some(p => p.phase === 'leave');
     
-    const load = getDayLoad(date, selectedPerson);
-    const dayProjects = getDayProjects(date, selectedPerson);
+    div.className = 'calendar-day' + 
+        (date.getDay() === 0 || date.getDay() === 6 ? ' weekend' : '') +
+        (isLeave ? ' leave' : '');
     
     div.innerHTML = `
         <div class="font-bold text-sm mb-1">${day}</div>
-        ${load > 0 ? `<div class="workload-badge ${load > 100 ? 'workload-danger' : load > 80 ? 'workload-warning' : ''}">${load}</div>` : ''}
+        ${load > 0 ? `<div class="workload-badge ${load > 100 ? 'workload-danger' : load > 60 ? 'workload-warning' : ''}">${load}</div>` : ''}
         <div class="mt-4 space-y-1">
             ${dayProjects.slice(0, 3).map(p => `
-                <div class="phase-pill ${p.phase === 'proposal' ? 'phase-proposal' : p.phase === 'preparation' ? 'phase-preparation' : 'phase-sprint'}">
+                <div class="phase-pill ${getPhaseClass(p.phase)}">
                     ${p.name.substring(0, 4)}
                 </div>
             `).join('')}
@@ -280,18 +321,36 @@ function createDay(day, date) {
     return div;
 }
 
-function getDayProjects(date, person) {
+function getDayProjects(date, person, role) {
     const dateStr = formatDate(date);
     const list = [];
     projects.forEach(p => {
-        if (p.owner !== person) return;
+        const personField = role === 'pm' ? 'pm' : 'client';
+        if (p[personField] !== person) return;
+        
         Object.entries(p.phases).forEach(([phaseName, phase]) => {
             if (dateStr >= phase.start && dateStr <= phase.end) {
-                list.push({ name: p.name, phase: phaseName, load: phase.load });
+                list.push({ 
+                    name: p.name, 
+                    phase: phaseName, 
+                    load: phase.load,
+                    pm: p.pm,
+                    client: p.client
+                });
             }
         });
     });
     return list;
+}
+
+function getPhaseClass(phase) {
+    const classes = {
+        proposal: 'phase-proposal',
+        preparation: 'phase-preparation',
+        sprint: 'phase-sprint',
+        leave: 'phase-leave'
+    };
+    return classes[phase] || '';
 }
 
 function showDetail(date, list) {
@@ -302,17 +361,39 @@ function showDetail(date, list) {
         ${list.length === 0 ? '<p class="text-slate-500">无项目</p>' : 
             list.map(p => `
                 <div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2">
-                    <span>${p.name} - ${p.phase}</span>
-                    <span class="font-bold ${p.load > 100 ? 'text-red-600' : ''}">${p.load}%</span>
+                    <div>
+                        <div class="font-medium">${p.name}</div>
+                        <div class="text-xs text-slate-500">
+                            PM: ${p.pm} | 客户: ${p.client}
+                        </div>
+                    </div>
+                    <span class="font-bold ${p.load === 0 ? 'text-gray-400' : p.load >= 80 ? 'text-red-600' : ''}">${p.load}%</span>
                 </div>
             `).join('')}
     `;
 }
 
-// ========== 新增：模态框功能 ==========
+function renderProjectList() {
+    const div = document.getElementById('projectList');
+    const personField = selectedRole === 'pm' ? 'pm' : 'client';
+    const personProjects = projects.filter(p => p[personField] === selectedPerson);
+    
+    div.innerHTML = personProjects.length === 0 ? '<p class="text-slate-400">暂无项目</p>' : 
+        personProjects.map(p => `
+            <div class="bg-white p-2 rounded border">
+                <div class="font-medium">${p.name}</div>
+                <div class="text-xs text-slate-500 mt-1">
+                    <span class="role-tag role-pm">${p.pm}</span>
+                    <span class="role-tag role-client">${p.client}</span>
+                </div>
+                <button onclick="deleteProject(${p.id})" class="text-red-500 text-xs mt-2 hover:underline">删除</button>
+            </div>
+        `).join('');
+}
+
+// ========== 模态框功能 ==========
 function openAddModal() {
     document.getElementById('addModal').classList.add('active');
-    // 设置默认日期
     const today = new Date();
     document.getElementById('phase1Start').value = formatDate(today);
     document.getElementById('phase1End').value = formatDate(new Date(today.getTime() + 14 * 86400000));
@@ -327,21 +408,26 @@ function closeAddModal() {
     clearForm();
 }
 
-function updateModalOwners() {
-    const select = document.getElementById('projOwner');
-    select.innerHTML = personnel.map(p => `<option value="${p}" ${p === selectedPerson ? 'selected' : ''}>${p}</option>`).join('');
+function updateModalOptions() {
+    document.getElementById('projPM').innerHTML = pmList.map(p => 
+        `<option value="${p}" ${p === selectedPerson && selectedRole === 'pm' ? 'selected' : ''}>${p}</option>`
+    ).join('');
+    
+    document.getElementById('projClient').innerHTML = clientList.map(p => 
+        `<option value="${p}" ${p === selectedPerson && selectedRole === 'client' ? 'selected' : ''}>${p}</option>`
+    ).join('');
 }
 
 function clearForm() {
     document.getElementById('projName').value = '';
-    document.getElementById('phase1Load').value = '90';
-    document.getElementById('phase2Load').value = '50';
-    document.getElementById('phase3Load').value = '110';
+    document.getElementById('leaveStart').value = '';
+    document.getElementById('leaveEnd').value = '';
 }
 
 function saveProject() {
     const name = document.getElementById('projName').value.trim();
-    const owner = document.getElementById('projOwner').value;
+    const pm = document.getElementById('projPM').value;
+    const client = document.getElementById('projClient').value;
     
     if (!name) {
         alert('请输入项目名称');
@@ -351,30 +437,44 @@ function saveProject() {
     const newProject = {
         id: Date.now(),
         name: name,
-        owner: owner,
-        phases: {
-            proposal: {
-                start: document.getElementById('phase1Start').value,
-                end: document.getElementById('phase1End').value,
-                load: parseInt(document.getElementById('phase1Load').value)
-            },
-            preparation: {
-                start: document.getElementById('phase2Start').value,
-                end: document.getElementById('phase2End').value,
-                load: parseInt(document.getElementById('phase2Load').value)
-            },
-            sprint: {
-                start: document.getElementById('phase3Start').value,
-                end: document.getElementById('phase3End').value,
-                load: parseInt(document.getElementById('phase3Load').value)
-            }
-        }
+        pm: pm,
+        client: client,
+        phases: {}
     };
+    
+    // Phase 1: Proposal (50%)
+    const p1Start = document.getElementById('phase1Start').value;
+    const p1End = document.getElementById('phase1End').value;
+    if (p1Start && p1End) {
+        newProject.phases.proposal = { start: p1Start, end: p1End, load: 50 };
+    }
+    
+    // Phase 2: Preparation (30-50%)
+    const p2Start = document.getElementById('phase2Start').value;
+    const p2End = document.getElementById('phase2End').value;
+    const p2Load = parseInt(document.getElementById('phase2Load').value);
+    if (p2Start && p2End) {
+        newProject.phases.preparation = { start: p2Start, end: p2End, load: p2Load };
+    }
+    
+    // Phase 3: Sprint (80%)
+    const p3Start = document.getElementById('phase3Start').value;
+    const p3End = document.getElementById('phase3End').value;
+    if (p3Start && p3End) {
+        newProject.phases.sprint = { start: p3Start, end: p3End, load: 80 };
+    }
+    
+    // Leave (0%)
+    const leaveStart = document.getElementById('leaveStart').value;
+    const leaveEnd = document.getElementById('leaveEnd').value;
+    if (leaveStart && leaveEnd) {
+        newProject.phases.leave = { start: leaveStart, end: leaveEnd, load: 0 };
+    }
     
     projects.push(newProject);
     saveData();
     closeAddModal();
-    renderPersonList();
+    renderPersonLists();
     renderProjectList();
     renderCalendar();
     showToast('项目添加成功！');
@@ -384,7 +484,7 @@ function deleteProject(id) {
     if (confirm('确定删除这个项目吗？')) {
         projects = projects.filter(p => p.id !== id);
         saveData();
-        renderPersonList();
+        renderPersonLists();
         renderProjectList();
         renderCalendar();
     }
@@ -418,16 +518,16 @@ function importData(input) {
     reader.onload = function(e) {
         try {
             const data = JSON.parse(e.target.result);
-            if (confirm(`确定导入 ${data.projects?.length || 0} 个项目？将覆盖现有数据。`)) {
+            if (confirm(`确定导入 ${data.projects?.length || 0} 个项目？`)) {
                 projects = data.projects || [];
                 saveData();
-                renderPersonList();
+                renderPersonLists();
                 renderProjectList();
                 renderCalendar();
                 showToast('导入成功！');
             }
         } catch (err) {
-            alert('文件格式错误：' + err.message);
+            alert('文件格式错误');
         }
     };
     reader.readAsText(file);
