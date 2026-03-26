@@ -35,6 +35,8 @@
         .project-item { position: relative; }
         .delete-btn { position: absolute; right: 4px; top: 4px; color: #ef4444; font-size: 12px; cursor: pointer; padding: 2px 6px; }
         .delete-btn:hover { background: #fee2e2; border-radius: 4px; }
+        .sync-status { cursor: pointer; }
+        .sync-status:hover { text-decoration: underline; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -49,6 +51,7 @@
                 导入
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(this)">
             </label>
+            <button onclick="syncToCloud()" class="px-3 py-1.5 bg-purple-500 text-white rounded text-sm" title="保存到仓库">同步</button>
             <button onclick="clearAllData()" class="px-3 py-1.5 bg-red-500 text-white rounded text-sm">清空</button>
         </div>
     </div>
@@ -75,7 +78,10 @@
             <div class="flex items-center gap-1"><span class="w-2 h-2 bg-blue-500 rounded-full"></span>准备 30-50%</div>
             <div class="flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span>冲击 80%</div>
         </div>
-        <div class="mt-2 text-xs text-slate-400" id="saveStatus">数据已自动保存</div>
+        <div class="mt-2 text-xs text-slate-400 flex justify-between">
+            <span id="saveStatus">数据已自动保存</span>
+            <span id="cloudStatus" class="sync-status" onclick="loadFromCloud()">☁️ 检查云端</span>
+        </div>
     </aside>
 
     <!-- Main -->
@@ -163,7 +169,8 @@ let currentDate = new Date(2026, 3, 1);
 let selectedPerson = pmList[0];
 let selectedRole = 'pm';
 let selectedSupports = [];
-const STORAGE_KEY = 'pm_data_v7';
+const STORAGE_KEY = 'pm_data_v8';
+const CLOUD_FILE = 'data.json'; // 云端数据文件名
 
 function formatDate(d) {
     if (typeof d === 'string') return d;
@@ -173,26 +180,122 @@ function formatDate(d) {
     return `${year}-${month}-${day}`;
 }
 
-// ========== 1. 数据持久化：从本地存储加载 ==========
+// ========== A. 自动加载云端数据 ==========
 function init() {
+    // 先加载本地数据
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         try {
             const data = JSON.parse(saved);
             projects = data.projects || [];
-            if (projects.length > 0) {
-                showStatus('已恢复 ' + projects.length + ' 个项目');
-            }
-        } catch (e) {
-            console.error('加载失败', e);
-        }
+        } catch (e) {}
     }
+    
     renderPersonLists();
     renderCalendar();
     updateModal();
+    
+    // 然后检查云端是否有更新
+    checkCloudData();
 }
 
-// ========== 1. 数据持久化：保存到本地存储 ==========
+// 检查云端数据
+function checkCloudData() {
+    showCloudStatus('☁️ 检查中...', 'text-blue-500');
+    
+    fetch(CLOUD_FILE + '?t=' + Date.now()) // 加时间戳防止缓存
+        .then(r => {
+            if (!r.ok) throw new Error('无云端数据');
+            return r.json();
+        })
+        .then(data => {
+            if (!data.projects || data.projects.length === 0) {
+                showCloudStatus('☁️ 云端为空', 'text-slate-400');
+                return;
+            }
+            
+            const cloudCount = data.projects.length;
+            const localCount = projects.length;
+            const cloudTime = data.savedAt ? new Date(data.savedAt).toLocaleString() : '未知';
+            
+            showCloudStatus(`☁️ 云端有${cloudCount}个项目`, 'text-green-600');
+            
+            // 如果云端数据更新，提示加载
+            if (cloudCount !== localCount) {
+                if (confirm(`发现云端备份（${cloudCount}个项目，${cloudTime}）\n\n是否加载云端数据？\n（将覆盖本地${localCount}个项目）`)) {
+                    projects = data.projects;
+                    saveToStorage();
+                    renderPersonLists();
+                    renderCalendar();
+                    showStatus('已加载云端数据');
+                }
+            }
+        })
+        .catch(err => {
+            showCloudStatus('☁️ 点击同步', 'text-slate-400');
+            console.log('云端检查:', err.message);
+        });
+}
+
+// 手动加载云端
+function loadFromCloud() {
+    if (!confirm('将从云端加载数据，覆盖本地内容，继续吗？')) return;
+    
+    showCloudStatus('☁️ 加载中...', 'text-blue-500');
+    
+    fetch(CLOUD_FILE + '?t=' + Date.now())
+        .then(r => r.json())
+        .then(data => {
+            projects = data.projects || [];
+            saveToStorage();
+            renderPersonLists();
+            renderCalendar();
+            showCloudStatus('☁️ 已同步', 'text-green-600');
+            showStatus('云端数据已加载');
+        })
+        .catch(err => {
+            alert('加载失败：' + err.message);
+            showCloudStatus('☁️ 加载失败', 'text-red-500');
+        });
+}
+
+// ========== A. 同步到云端（下载JSON手动上传） ==========
+function syncToCloud() {
+    if (projects.length === 0) {
+        alert('没有项目可同步');
+        return;
+    }
+    
+    const data = {
+        projects: projects,
+        savedAt: new Date().toISOString(),
+        savedBy: 'admin',
+        version: '1.0'
+    };
+    
+    // 生成文件供手动上传
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = CLOUD_FILE;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    showStatus('文件已下载，请上传到GitHub仓库');
+    
+    // 显示上传指引
+    setTimeout(() => {
+        alert('同步步骤：\n1. 文件已下载为 data.json\n2. 访问 github.com/daizydd/capacity-management\n3. 点击 "Add file" → "Upload files"\n4. 上传 data.json 并 Commit\n5. 其他人刷新网页即可看到');
+    }, 500);
+}
+
+function showCloudStatus(text, colorClass) {
+    const el = document.getElementById('cloudStatus');
+    el.textContent = text;
+    el.className = 'sync-status ' + colorClass;
+}
+
 function saveToStorage() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
         projects: projects,
@@ -234,7 +337,6 @@ function renderPersonLists() {
     `).join('');
 }
 
-// ========== 3. 项目删除：显示项目列表和删除按钮 ==========
 function renderPersonProjects(person, role) {
     let personProjects = [];
     if (role === 'pm') {
@@ -255,7 +357,6 @@ function renderPersonProjects(person, role) {
     `).join('') + '</div>';
 }
 
-// ========== 3. 项目删除：删除功能 ==========
 function deleteProject(id) {
     if (!confirm('确定删除这个项目吗？')) return;
     projects = projects.filter(p => p.id !== id);
@@ -265,9 +366,8 @@ function deleteProject(id) {
     showStatus('项目已删除');
 }
 
-// ========== 3. 清空所有数据 ==========
 function clearAllData() {
-    if (!confirm('确定清空所有项目吗？此操作不可恢复！')) return;
+    if (!confirm('确定清空所有项目吗？')) return;
     if (!confirm('再次确认：将删除所有 ' + projects.length + ' 个项目？')) return;
     projects = [];
     localStorage.removeItem(STORAGE_KEY);
@@ -448,14 +548,13 @@ function saveProject() {
     };
     
     projects.push(newProject);
-    saveToStorage(); // 自动保存
+    saveToStorage();
     closeModal();
     renderPersonLists();
     renderCalendar();
-    showStatus('项目添加成功！');
+    showStatus('项目添加成功！点击"同步"上传到云端');
 }
 
-// ========== 2. 导入功能 ==========
 function importData(input) {
     const file = input.files[0];
     if (!file) return;
@@ -471,7 +570,7 @@ function importData(input) {
                 return;
             }
             
-            if (confirm(`确定导入 ${projectCount} 个项目吗？将覆盖现有数据。`)) {
+            if (confirm(`确定导入 ${projectCount} 个项目吗？`)) {
                 projects = data.projects;
                 saveToStorage();
                 renderPersonLists();
@@ -489,14 +588,14 @@ function importData(input) {
 function exportData() {
     const data = { 
         projects: projects, 
-        exportTime: new Date().toISOString(),
+        savedAt: new Date().toISOString(),
         version: '1.0'
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `项目备份_${formatDate(new Date())}.json`;
+    a.download = `备份_${formatDate(new Date())}.json`;
     a.click();
     URL.revokeObjectURL(url);
     showStatus('导出成功');
