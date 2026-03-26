@@ -1,259 +1,346 @@
 {
+  "version": "1.0",
+  "exportTime": "2026-03-26T15:53:12.202Z",
   "projects": [
     {
-      "id": 1774509925122,
+      "id": 1774539351796,
       "name": "Mck Asia Week",
-      "pm": "刘絮",
-      "client": "刘絮",
-      "supports": [
-        "刘絮",
+      "phase": "prep",
+      "startDate": "2026-03-27",
+      "endDate": "2026-04-06",
+      "people": [
+        "鱼蛋",
+        "鱼蛋",
+        "鱼蛋"
+      ],
+      "equipment": "50"
+    },
+    {
+      "id": 1774539390565,
+      "name": "Mck Asia Week",
+      "phase": "impact",
+      "startDate": "2026-04-07",
+      "endDate": "2026-04-09",
+      "people": [
+        "鱼蛋",
+        "鱼蛋",
+        "鱼蛋",
+        "Kathy",
         "思璇",
+        "Miles",
+        "Ella"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774539437597,
+      "name": "INSH Chengdu Offsite",
+      "phase": "prep",
+      "startDate": "2026-03-26",
+      "endDate": "2026-04-05",
+      "people": [
+        "Huan",
+        "Daizy"
+      ],
+      "equipment": "50"
+    },
+    {
+      "id": 1774539467148,
+      "name": "INSH Chengdu Offsite",
+      "phase": "impact",
+      "startDate": "2026-04-06",
+      "endDate": "2026-04-12",
+      "people": [
+        "Huan",
+        "Daizy",
+        "Daizy",
+        "Huan",
+        "潘潘"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774539498611,
+      "name": "波克城市",
+      "phase": "proposal",
+      "startDate": "2026-03-26",
+      "endDate": "2026-04-12",
+      "people": [
+        "鱼蛋",
+        "Daizy"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774539529802,
+      "name": "波克城市",
+      "phase": "prep",
+      "startDate": "2026-04-13",
+      "endDate": "2026-05-15",
+      "people": [
+        "鱼蛋",
+        "Daizy",
         "Kathy"
       ],
-      "phases": {
-        "sprint": {
-          "start": "2026-04-07",
-          "end": "2026-04-09",
-          "load": 80
-        }
-      }
+      "equipment": "30"
     },
     {
-      "id": 1774510229080,
-      "name": "Mck China Week",
-      "pm": "刘絮",
-      "client": "刘絮",
-      "supports": null,
-      "phases": {
-        "preparation": {
-          "start": "2026-03-30",
-          "end": "2026-04-03",
-          "load": 50
-        }
-      }
-    },
-    {
-      "id": 1774510488603,
-      "name": "INSH Chengdu 董事会",
-      "pm": "Huan",
-      "client": "Daizy",
-      "supports": [
-        "Huan",
-        "潘潘",
-        "Daizy"
-      ],
-      "phases": {
-        "preparation": {
-          "start": "2026-03-27",
-          "end": "2026-04-05",
-          "load": 50
-        },
-        "sprint": {
-          "start": "2026-04-06",
-          "end": "2026-04-12",
-          "load": 80
-        }
-      }
-    },
-    {
-      "id": 1774510915604,
-      "name": "波克城市员工激励旅行",
-      "pm": "刘絮",
-      "client": "Daizy",
-      "supports": [
-        "刘絮",
-        "Kathy",
-        "Daizy"
-      ],
-      "phases": {
-        "proposal": {
-          "start": "2026-03-26",
-          "end": "2026-04-09",
-          "load": 50
-        },
-        "preparation": {
-          "start": "2026-04-10",
-          "end": "2026-05-10",
-          "load": 40
-        },
-        "sprint": {
-          "start": "2026-05-11",
-          "end": "2026-06-15",
-          "load": 80
-        }
-      }
-    },
-    {
-      "id": 1774511066846,
-      "name": "Bain Summer Retreat Changsha",
-      "pm": "思璇",
-      "client": "刘絮",
-      "supports": [
-        "刘絮",
+      "id": 1774539565715,
+      "name": "波克城市",
+      "phase": "impact",
+      "startDate": "2026-05-18",
+      "endDate": "2026-06-21",
+      "people": [
+        "鱼蛋",
         "Daizy",
+        "Daizy",
+        "鱼蛋",
+        "Kathy"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774539614275,
+      "name": "波克城市",
+      "phase": "prep",
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-31",
+      "people": [
+        "Kathy",
+        "鱼蛋"
+      ],
+      "equipment": "30"
+    },
+    {
+      "id": 1774539649582,
+      "name": "波克城市",
+      "phase": "impact",
+      "startDate": "2026-09-01",
+      "endDate": "2026-09-30",
+      "people": [
+        "Kathy",
+        "鱼蛋",
+        "鱼蛋",
+        "Kathy",
         "思璇"
       ],
-      "phases": {
-        "proposal": {
-          "start": "2026-04-13",
-          "end": "2026-04-30",
-          "load": 50
-        },
-        "preparation": {
-          "start": "2026-05-01",
-          "end": "2026-06-22",
-          "load": 40
-        },
-        "sprint": {
-          "start": "2026-06-23",
-          "end": "2026-06-28",
-          "load": 80
-        }
-      }
+      "equipment": null
     },
     {
-      "id": 1774511807816,
-      "name": "中欧商学院大理",
-      "pm": "Miles",
-      "client": "刘絮",
-      "supports": [
-        "刘絮",
-        "Miles"
-      ],
-      "phases": {
-        "preparation": {
-          "start": "2026-03-27",
-          "end": "2026-04-24",
-          "load": 40
-        },
-        "sprint": {
-          "start": "2026-04-25",
-          "end": "2026-04-29",
-          "load": 80
-        }
-      }
-    },
-    {
-      "id": 1774527207575,
+      "id": 1774539693775,
       "name": "金光纸业十周年",
-      "pm": "Huan",
-      "client": "Daizy",
-      "supports": null,
-      "phases": {
-        "proposal": {
-          "start": "2026-04-06",
-          "end": "2026-04-30",
-          "load": 50
-        },
-        "sprint": {
-          "start": "2026-09-11",
-          "end": "2026-09-13",
-          "load": 80
-        }
-      }
-    },
-    {
-      "id": 1774527383093,
-      "name": "「预」天演2026越野跑",
-      "pm": "刘絮",
-      "client": "刘絮",
-      "supports": [
-        "刘絮"
-      ],
-      "phases": {
-        "proposal": {
-          "start": "2026-05-11",
-          "end": "2026-05-29",
-          "load": 50
-        },
-        "preparation": {
-          "start": "2026-06-01",
-          "end": "2026-08-03",
-          "load": 40
-        },
-        "sprint": {
-          "start": "2026-08-10",
-          "end": "2026-08-15",
-          "load": 80
-        }
-      }
-    },
-    {
-      "id": 1774527467025,
-      "name": "「预」Nio Capital 济州岛",
-      "pm": "刘絮",
-      "client": "刘絮",
-      "supports": [
-        "刘絮",
+      "phase": "proposal",
+      "startDate": "2026-04-13",
+      "endDate": "2026-04-30",
+      "people": [
+        "Huan",
         "Daizy"
       ],
-      "phases": {
-        "proposal": {
-          "start": "2026-06-01",
-          "end": "2026-06-30",
-          "load": 50
-        },
-        "preparation": {
-          "start": "2026-07-01",
-          "end": "2026-09-01",
-          "load": 30
-        },
-        "sprint": {
-          "start": "2026-09-02",
-          "end": "2026-09-05",
-          "load": 80
-        }
-      }
+      "equipment": null
     },
     {
-      "id": 1774527600323,
-      "name": "「预」MUJI董事会offsite",
-      "pm": "潘潘",
-      "client": "Daizy",
-      "supports": [
-        "Huan"
+      "id": 1774539777951,
+      "name": "中欧大理毕业班",
+      "phase": "prep",
+      "startDate": "2026-03-26",
+      "endDate": "2026-04-23",
+      "people": [
+        "Miles",
+        "鱼蛋"
       ],
-      "phases": {
-        "proposal": {
-          "start": "2026-05-11",
-          "end": "2026-05-29",
-          "load": 50
-        },
-        "preparation": {
-          "start": "2026-06-01",
-          "end": "2026-08-01",
-          "load": 30
-        },
-        "sprint": {
-          "start": "2026-08-05",
-          "end": "2026-08-09",
-          "load": 80
-        }
-      }
+      "equipment": "40"
     },
     {
-      "id": 1774527714999,
-      "name": "波克城市下半年期",
-      "pm": "Kathy",
-      "client": "刘絮",
-      "supports": [
-        "刘絮",
+      "id": 1774539820668,
+      "name": "中欧大理毕业班",
+      "phase": "impact",
+      "startDate": "2026-04-24",
+      "endDate": "2026-03-29",
+      "people": [
+        "Miles",
+        "鱼蛋",
+        "鱼蛋",
+        "思璇",
+        "Miles"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774539880003,
+      "name": "中欧大理毕业班",
+      "phase": "impact",
+      "startDate": "2026-04-24",
+      "endDate": "2026-04-29",
+      "people": [
+        "Miles",
+        "鱼蛋",
+        "鱼蛋",
+        "思璇",
+        "Miles"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774539949149,
+      "name": "天演2026越野跑",
+      "phase": "proposal",
+      "startDate": "2026-05-11",
+      "endDate": "2026-05-31",
+      "people": [
+        "Kathy",
+        "鱼蛋"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774539979525,
+      "name": "Bain Changsha ",
+      "phase": "proposal",
+      "startDate": "2026-04-13",
+      "endDate": "2026-03-31",
+      "people": [
+        "思璇",
+        "鱼蛋"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774540014495,
+      "name": "Bain Changsha ",
+      "phase": "prep",
+      "startDate": "2026-05-01",
+      "endDate": "2026-06-22",
+      "people": [
+        "思璇",
+        "鱼蛋"
+      ],
+      "equipment": "40"
+    },
+    {
+      "id": 1774540041123,
+      "name": "Bain Changsha ",
+      "phase": "impact",
+      "startDate": "2026-06-23",
+      "endDate": "2026-06-28",
+      "people": [
+        "思璇",
+        "鱼蛋",
+        "Daizy",
+        "鱼蛋",
+        "思璇"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774540117190,
+      "name": "天演2026越野跑",
+      "phase": "prep",
+      "startDate": "2026-06-01",
+      "endDate": "2026-07-31",
+      "people": [
+        "Kathy",
+        "鱼蛋"
+      ],
+      "equipment": "30"
+    },
+    {
+      "id": 1774540147089,
+      "name": "天演2026越野跑",
+      "phase": "impact",
+      "startDate": "2026-08-01",
+      "endDate": "2026-08-07",
+      "people": [
+        "Kathy",
+        "鱼蛋",
+        "Daizy",
+        "鱼蛋",
         "Kathy"
       ],
-      "phases": {
-        "preparation": {
-          "start": "2026-08-03",
-          "end": "2026-08-31",
-          "load": 30
-        },
-        "sprint": {
-          "start": "2026-09-01",
-          "end": "2026-09-30",
-          "load": 80
-        }
-      }
+      "equipment": null
+    },
+    {
+      "id": 1774540194206,
+      "name": "MUJI董事会",
+      "phase": "proposal",
+      "startDate": "2026-06-01",
+      "endDate": "2026-06-22",
+      "people": [
+        "潘潘",
+        "Huan"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774540220394,
+      "name": "MUJI董事会",
+      "phase": "prep",
+      "startDate": "2026-06-23",
+      "endDate": "2026-07-31",
+      "people": [
+        "潘潘",
+        "Huan"
+      ],
+      "equipment": "40"
+    },
+    {
+      "id": 1774540249831,
+      "name": "MUJI董事会",
+      "phase": "impact",
+      "startDate": "2026-08-05",
+      "endDate": "2026-08-08",
+      "people": [
+        "潘潘",
+        "Huan",
+        "Daizy",
+        "Huan",
+        "潘潘"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774540295877,
+      "name": "NIO 济州岛",
+      "phase": "proposal",
+      "startDate": "2026-06-01",
+      "endDate": "2026-06-30",
+      "people": [
+        "思璇",
+        "鱼蛋"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1774540320103,
+      "name": "NIO 济州岛",
+      "phase": "prep",
+      "startDate": "2026-07-01",
+      "endDate": "2026-08-31",
+      "people": [
+        "思璇",
+        "鱼蛋"
+      ],
+      "equipment": "40"
+    },
+    {
+      "id": 1774540348780,
+      "name": "NIO 济州岛",
+      "phase": "impact",
+      "startDate": "2026-09-09",
+      "endDate": "2026-09-12",
+      "people": [
+        "思璇",
+        "鱼蛋",
+        "Daizy",
+        "鱼蛋",
+        "思璇"
+      ],
+      "equipment": null
     }
   ],
-  "exportTime": "2026-03-26T13:54:36.187Z",
-  "version": "1.0"
+  "selectedPeople": {
+    "pm": "潘潘",
+    "client": null,
+    "support": []
+  },
+  "currentDate": "2026-07-31T16:00:00.000Z"
 }
