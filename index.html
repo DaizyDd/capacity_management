@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>项目周期管理系统 - 实时同步版</title>
+    <title>项目周期管理系统</title>
     <style>
         * {
             margin: 0;
@@ -12,14 +12,14 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hirino Sans GB', 'Microsoft YaHei', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -30,18 +30,11 @@
         h1 {
             text-align: center;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
             font-size: 2.5em;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-        }
-
-        .sync-status {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-            color: #666;
         }
 
         .toolbar {
@@ -50,23 +43,55 @@
             gap: 15px;
             margin-bottom: 25px;
             flex-wrap: wrap;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            border: 2px dashed #dee2e6;
         }
 
-        .toolbar-title {
-            width: 100%;
-            text-align: center;
-            margin-bottom: 10px;
-            color: #666;
-            font-size: 0.9em;
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
         }
 
         .main-layout {
             display: grid;
-            grid-template-columns: 320px 1fr;
+            grid-template-columns: 300px 1fr;
             gap: 30px;
         }
 
@@ -81,11 +106,6 @@
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .module:hover {
-            transform: translateY(-5px);
         }
 
         .module-title {
@@ -109,8 +129,6 @@
             color: #666;
             margin-bottom: 8px;
             font-size: 0.9em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .person-tag {
@@ -122,7 +140,6 @@
             transition: all 0.3s ease;
             font-size: 0.9em;
             border: 2px solid transparent;
-            user-select: none;
         }
 
         .person-tag:hover {
@@ -164,14 +181,92 @@
             background: #f57c00;
         }
 
-        .leave-tag {
-            background: #ffebee;
-            color: #d32f2f;
-            border-color: #d32f2f;
+        .workload-view {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow-x: auto;
         }
 
-        .leave-tag.selected {
-            background: #d32f2f;
+        .workload-grid {
+            display: grid;
+            grid-template-columns: 100px repeat(31, 40px);
+            gap: 2px;
+            min-width: max-content;
+        }
+
+        .workload-header {
+            background: #f5f5f5;
+            padding: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8em;
+            border-radius: 4px;
+        }
+
+        .workload-cell {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .workload-cell:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .workload-cell.empty {
+            background: #f0f0f0;
+        }
+
+        .workload-cell.proposal {
+            background: #e1bee7;
+            color: #6a1b9a;
+        }
+
+        .workload-cell.prep-light {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .workload-cell.prep-medium {
+            background: #81c784;
+            color: #1b5e20;
+        }
+
+        .workload-cell.prep-heavy {
+            background: #4caf50;
+            color: white;
+        }
+
+        .workload-cell.impact {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+
+        .workload-cell.leave {
+            background: #ffebee;
+            color: #d32f2f;
+            text-decoration: line-through;
+        }
+
+        .workload-name {
+            background: #667eea;
+            color: white;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
         }
 
         .calendar-section {
@@ -193,69 +288,9 @@
             gap: 10px;
         }
 
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95em;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-        }
-
-        .btn-secondary {
-            background: #f5f5f5;
-            color: #333;
-            border: 2px solid #e0e0e0;
-        }
-
-        .btn-secondary:hover {
-            background: #e0e0e0;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-            color: white;
-        }
-
-        .btn-warning {
-            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-            color: white;
-        }
-
-        .btn-info {
-            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
-            color: white;
-        }
-
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: -9999px;
         }
 
         .calendar-grid {
@@ -285,7 +320,7 @@
             min-height: 100px;
         }
 
-        .calendar-day:hover:not(.disabled) {
+        .calendar-day:hover {
             border-color: #667eea;
             transform: scale(1.02);
         }
@@ -297,67 +332,78 @@
             opacity: 0.7;
         }
 
-        .calendar-day.disabled::after {
-            content: '🌴 休假中';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #d32f2f;
-            font-weight: bold;
-            font-size: 0.9em;
-            white-space: nowrap;
-        }
-
         .day-number {
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
         }
 
-        .calendar-day.disabled .day-number {
-            color: #d32f2f;
-        }
-
-        .phase-indicator {
+        .project-item {
             font-size: 0.75em;
             padding: 2px 6px;
             border-radius: 4px;
             margin-top: 4px;
-            display: inline-block;
-            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
         }
 
-        .phase-proposal {
+        .project-item:hover {
+            transform: translateX(3px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .project-item.proposal {
             background: #e1bee7;
             color: #6a1b9a;
         }
 
-        .phase-prep-light {
+        .project-item.prep-light {
             background: #c8e6c9;
             color: #2e7d32;
         }
 
-        .phase-prep-medium {
+        .project-item.prep-medium {
             background: #81c784;
             color: #1b5e20;
         }
 
-        .phase-prep-heavy {
+        .project-item.prep-heavy {
             background: #4caf50;
             color: white;
         }
 
-        .phase-impact {
+        .project-item.impact {
             background: #ffcdd2;
             color: #c62828;
-            font-weight: bold;
             animation: pulse 2s infinite;
+        }
+
+        .project-item.leave {
+            background: #ffebee;
+            color: #d32f2f;
+            text-decoration: line-through;
         }
 
         @keyframes pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
+        }
+
+        .impact-marker {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 12px;
+            height: 12px;
+            background: #ff5252;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
         }
 
         .person-avatars {
@@ -378,35 +424,6 @@
             color: white;
             font-size: 0.7em;
             font-weight: bold;
-        }
-
-        .stats-panel {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 10px;
-        }
-
-        .stat-item {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            font-size: 0.9em;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 4px;
-            transition: width 0.5s ease;
         }
 
         .phase-legend {
@@ -494,10 +511,6 @@
             background: #e0e0e0;
         }
 
-        .checkbox-item input[type="checkbox"] {
-            width: auto;
-        }
-
         .close-btn {
             float: right;
             font-size: 1.5em;
@@ -509,36 +522,15 @@
             color: #333;
         }
 
-        .impact-marker {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 12px;
-            height: 12px;
-            background: #ff5252;
-            border-radius: 50%;
-            animation: blink 1s infinite;
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .selected-count {
-            font-size: 0.8em;
-            color: #666;
-            margin-left: 5px;
-        }
-
-        .sync-hint {
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 12px 15px;
-            margin: 15px 0;
-            border-radius: 5px;
-            font-size: 0.85em;
-            color: #1976d2;
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
         }
 
         .toast {
@@ -556,107 +548,58 @@
         }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .toast.success {
-            background: #4caf50;
-        }
+        .toast.success { background: #4caf50; }
+        .toast.error { background: #f44336; }
 
-        .toast.error {
-            background: #f44336;
-        }
-
-        .config-panel {
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .config-panel h3 {
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .config-input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
-            font-family: monospace;
-        }
-
-        .config-hint {
+        .selected-count {
             font-size: 0.8em;
-            color: #6c757d;
-            margin-top: 5px;
+            color: #666;
+            margin-left: auto;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📊 项目周期管理系统</h1>
-        <div class="sync-status" id="syncStatus">⚪ 就绪</div>
         
-        <!-- 配置面板（可折叠） -->
-        <div class="config-panel" id="configPanel">
-            <h3>⚙️ GitHub 自动同步配置（只需配置一次）</h3>
-            <label>GitHub Token（<a href="https://github.com/settings/tokens" target="_blank">点击获取</a>）：</label>
-            <input type="password" id="githubToken" class="config-input" placeholder="ghp_xxxxxxxxxxxx">
-            <div class="config-hint">Token 仅保存在本地浏览器，不会上传到任何地方</div>
-            
-            <label>仓库所有者（用户名）：</label>
-            <input type="text" id="githubOwner" class="config-input" placeholder="如：daizydd">
-            
-            <label>仓库名：</label>
-            <input type="text" id="githubRepo" class="config-input" placeholder="如：capacity-management">
-            
-            <label>分支名：</label>
-            <input type="text" id="githubBranch" class="config-input" value="main">
-            
-            <div style="margin-top: 15px; display: flex; gap: 10px;">
-                <button class="btn btn-secondary" onclick="saveConfig()">💾 保存配置</button>
-                <button class="btn btn-info" onclick="testConnection()">🔌 测试连接</button>
-            </div>
-        </div>
-
-        <!-- 三个核心功能按钮 -->
         <div class="toolbar">
-            <div class="toolbar-title">💾 数据管理</div>
-            
-            <button class="btn btn-success" onclick="exportAndPush()" id="pushBtn">
-                🚀 保存并推送
+            <button class="btn btn-success" onclick="exportData()">
+                📤 导出文件
             </button>
-            
             <div class="file-input-wrapper">
                 <button class="btn btn-warning" onclick="document.getElementById('importFile').click()">
-                    📥 导入本地文件
+                    📥 导入文件
                 </button>
-                <input type="file" id="importFile" accept=".json" onchange="importLocalData(event)">
+                <input type="file" id="importFile" accept=".json" onchange="importData(event)">
             </div>
-            
-            <button class="btn btn-info" onclick="pullFromGitHub()">
-                🔄 从云端拉取
+            <button class="btn btn-info" onclick="syncData()">
+                🔄 同步
             </button>
         </div>
 
-        <div class="sync-hint">
-            <strong>使用流程：</strong><br>
-            1. 配置 GitHub Token（只需一次）→ 2. 修改数据 → 3. 点击"保存并推送"自动提交到 GitHub → 4. 其他人点击"从云端拉取"获取最新数据<br>
-            <strong>注意：</strong>GitHub Pages 有 5-10 分钟缓存延迟，推送后建议直接点击"从云端拉取"查看最新数据
+        <div class="view-toggle">
+            <button class="btn btn-primary" onclick="showView('calendar')" id="calendarBtn">📅 日历视图</button>
+            <button class="btn btn-secondary" onclick="showView('workload')" id="workloadBtn">👥 工作量视图</button>
         </div>
 
-        <div class="main-layout">
+        <!-- 工作量视图 -->
+        <div id="workloadView" class="workload-view" style="display: none;">
+            <h3 style="margin-bottom: 15px;">📈 单人工作量看板（点击日期查看详情）</h3>
+            <div id="workloadGrid"></div>
+        </div>
+
+        <div class="main-layout" id="mainLayout">
             <div class="sidebar">
                 <div class="module">
                     <div class="module-title">
@@ -682,19 +625,6 @@
                         <span class="selected-count" id="supportCount">已选: 0人</span>
                     </div>
                     <div id="supportList"></div>
-                </div>
-
-                <div class="module">
-                    <div class="module-title">
-                        🌴 休假安排
-                        <span class="selected-count" id="leaveCount">已选: 0人</span>
-                    </div>
-                    <div id="leaveList"></div>
-                </div>
-
-                <div class="stats-panel">
-                    <h3 style="margin-bottom: 15px;">📈 工作量统计</h3>
-                    <div id="workloadStats"></div>
                 </div>
             </div>
 
@@ -725,7 +655,7 @@
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #81c784;"></div>
-                        <span>准备阶段 (30-50% 设备量)</span>
+                        <span>准备阶段 (30-50%)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #ffcdd2;"></div>
@@ -733,17 +663,20 @@
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background: #ffebee; border: 2px solid #ffcdd2;"></div>
-                        <span>休假锁定</span>
+                        <span>休假</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 项目编辑模态框 -->
     <div class="modal" id="projectModal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h2 style="margin-bottom: 20px;">添加新项目</h2>
+            <h2 style="margin-bottom: 20px;" id="modalTitle">添加新项目</h2>
+            
+            <input type="hidden" id="projectId">
             
             <div class="form-group">
                 <label>项目名称</label>
@@ -756,6 +689,7 @@
                     <option value="proposal">方案阶段 (40%)</option>
                     <option value="prep">准备阶段 (30-50%)</option>
                     <option value="impact">冲击阶段 (80%)</option>
+                    <option value="leave">🌴 休假</option>
                 </select>
             </div>
 
@@ -765,6 +699,16 @@
                     <option value="30">少量设备 (30%)</option>
                     <option value="40">中等设备 (40%)</option>
                     <option value="50">大量设备 (50%)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="leaveTypeGroup" style="display: none;">
+                <label>休假类型</label>
+                <select id="leaveType">
+                    <option value="年假">年假</option>
+                    <option value="病假">病假</option>
+                    <option value="事假">事假</option>
+                    <option value="调休">调休</option>
                 </select>
             </div>
 
@@ -779,9 +723,14 @@
                 <input type="date" id="endDate" style="margin-top: 10px;">
             </div>
 
-            <button class="btn btn-primary" onclick="addProject()" style="width: 100%; margin-top: 10px;">
-                确认添加
-            </button>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-primary" onclick="saveProject()" style="flex: 1;">
+                    保存
+                </button>
+                <button class="btn btn-danger" onclick="deleteProject()" id="deleteBtn" style="display: none;">
+                    删除
+                </button>
+            </div>
         </div>
     </div>
 
@@ -789,274 +738,107 @@
 
     <script>
         // ==================== 项目身份定义 ====================
-        const pmList = ['刘絮', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles'];
-        const clientList = ['刘絮', 'Huan', 'Daizy'];
-        const supportList = ['Daizy', '刘絮', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles'];
-        const leaveTypes = ['年假', '病假', '事假', '调休'];
-
+        const pmList = ['鱼蛋', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles'];
+        const clientList = ['鱼蛋', 'Huan', 'Daizy'];
+        const supportList = ['Daizy', '鱼蛋', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles', 'Lizzy', 'Ella'];
+        
         // ==================== 全局状态 ====================
         let currentDate = new Date(2026, 3, 1);
         let selectedPeople = {
             pm: null,
             client: null,
-            support: new Set(),
-            leave: new Set()
+            support: new Set()
         };
         let projects = [];
-        let leaveRecords = [];
-        
-        let githubConfig = {
-            token: '',
-            owner: '',
-            repo: '',
-            branch: 'main',
-            path: 'data.json'
-        };
+        let currentView = 'calendar';
 
         // ==================== 初始化 ====================
         function init() {
-            loadConfig();
             renderPeople();
             renderCalendar();
-            updateStats();
-            updateSyncStatus('就绪', 'ready');
+            renderWorkload();
         }
 
-        // ==================== 配置管理 ====================
-        function loadConfig() {
-            const saved = localStorage.getItem('githubConfig');
-            if (saved) {
-                githubConfig = JSON.parse(saved);
-                document.getElementById('githubToken').value = githubConfig.token || '';
-                document.getElementById('githubOwner').value = githubConfig.owner || '';
-                document.getElementById('githubRepo').value = githubConfig.repo || '';
-                document.getElementById('githubBranch').value = githubConfig.branch || 'main';
+        // ==================== 视图切换 ====================
+        function showView(view) {
+            currentView = view;
+            const calendarBtn = document.getElementById('calendarBtn');
+            const workloadBtn = document.getElementById('workloadBtn');
+            const mainLayout = document.getElementById('mainLayout');
+            const workloadView = document.getElementById('workloadView');
+
+            if (view === 'calendar') {
+                calendarBtn.className = 'btn btn-primary';
+                workloadBtn.className = 'btn btn-secondary';
+                mainLayout.style.display = 'grid';
+                workloadView.style.display = 'none';
+                renderCalendar();
+            } else {
+                calendarBtn.className = 'btn btn-secondary';
+                workloadBtn.className = 'btn btn-primary';
+                mainLayout.style.display = 'none';
+                workloadView.style.display = 'block';
+                renderWorkload();
             }
         }
 
-        function saveConfig() {
-            githubConfig = {
-                token: document.getElementById('githubToken').value.trim(),
-                owner: document.getElementById('githubOwner').value.trim(),
-                repo: document.getElementById('githubRepo').value.trim(),
-                branch: document.getElementById('githubBranch').value.trim() || 'main',
-                path: 'data.json'
-            };
-            localStorage.setItem('githubConfig', JSON.stringify(githubConfig));
-            showToast('配置已保存到本地', 'success');
-        }
-
-        function getAuthHeaders() {
-            return {
-                'Authorization': `token ${githubConfig.token}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            };
-        }
-
-        // ==================== 核心功能：保存并推送到 GitHub ====================
-        async function exportAndPush() {
-            if (!validateConfig()) return;
-
-            const btn = document.getElementById('pushBtn');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ 推送中...';
-            updateSyncStatus('正在推送...', 'syncing');
-
-            try {
-                // 1. 准备数据
-                const exportData = {
-                    version: '1.0',
-                    exportTime: new Date().toISOString(),
-                    data: {
-                        projects: projects,
-                        leaveRecords: leaveRecords,
-                        selectedPeople: {
-                            pm: selectedPeople.pm,
-                            client: selectedPeople.client,
-                            support: Array.from(selectedPeople.support),
-                            leave: Array.from(selectedPeople.leave)
-                        },
-                        currentDate: currentDate.toISOString()
-                    }
-                };
-
-                const content = btoa(unescape(encodeURIComponent(JSON.stringify(exportData, null, 2))));
-
-                // 2. 检查文件是否存在（获取 sha）
-                let sha = null;
-                try {
-                    const getResponse = await fetch(
-                        `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/${githubConfig.path}?ref=${githubConfig.branch}`,
-                        { headers: getAuthHeaders() }
-                    );
-                    if (getResponse.ok) {
-                        const fileData = await getResponse.json();
-                        sha = fileData.sha;
-                    }
-                } catch (e) {
-                    // 文件不存在，继续创建
-                }
-
-                // 3. 创建或更新文件
-                const body = {
-                    message: `更新项目数据 ${new Date().toLocaleString()}`,
-                    content: content,
-                    branch: githubConfig.branch
-                };
-                if (sha) body.sha = sha;
-
-                const response = await fetch(
-                    `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/${githubConfig.path}`,
-                    {
-                        method: 'PUT',
-                        headers: getAuthHeaders(),
-                        body: JSON.stringify(body)
-                    }
-                );
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || '推送失败');
-                }
-
-                showToast('✅ 已成功推送到 GitHub！', 'success');
-                updateSyncStatus(`最后推送: ${new Date().toLocaleTimeString()}`, 'success');
-                
-            } catch (error) {
-                console.error('Push error:', error);
-                showToast('推送失败: ' + error.message, 'error');
-                updateSyncStatus('推送失败', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '🚀 保存并推送';
-            }
-        }
-
-        // ==================== 从 GitHub 拉取数据 ====================
-        async function pullFromGitHub() {
-            if (!validateConfig()) return;
-
-            updateSyncStatus('正在拉取...', 'syncing');
-
-            try {
-                const response = await fetch(
-                    `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}/contents/${githubConfig.path}?ref=${githubConfig.branch}`,
-                    { headers: getAuthHeaders() }
-                );
-
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        showToast('云端暂无数据文件，请先推送', 'error');
-                        updateSyncStatus('云端无数据', 'error');
-                        return;
-                    }
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const fileData = await response.json();
-                const content = decodeURIComponent(escape(atob(fileData.content)));
-                const data = JSON.parse(content);
-
-                if (validateData(data)) {
-                    restoreData(data.data || data);
-                    showToast('✅ 已从云端拉取最新数据！', 'success');
-                    updateSyncStatus(`最后拉取: ${new Date().toLocaleTimeString()}`, 'success');
-                }
-
-            } catch (error) {
-                console.error('Pull error:', error);
-                showToast('拉取失败: ' + error.message, 'error');
-                updateSyncStatus('拉取失败', 'error');
-            }
-        }
-
-        // ==================== 测试连接 ====================
-        async function testConnection() {
-            if (!validateConfig()) return;
-
-            showToast('正在测试连接...', 'success');
-
-            try {
-                const response = await fetch(
-                    `https://api.github.com/repos/${githubConfig.owner}/${githubConfig.repo}`,
-                    { headers: getAuthHeaders() }
-                );
-
-                if (!response.ok) throw new Error('连接失败');
-
-                const repo = await response.json();
-                showToast(`✅ 连接成功！仓库: ${repo.name}`, 'success');
-                
-            } catch (error) {
-                showToast('连接失败: ' + error.message, 'error');
-            }
-        }
-
-        // ==================== 本地导入导出（备用） ====================
-        function importLocalData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            event.target.value = '';
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (validateData(data)) {
-                        restoreData(data.data || data);
-                        showToast('本地文件导入成功！', 'success');
-                    }
-                } catch (error) {
-                    showToast('导入失败: ' + error.message, 'error');
-                }
-            };
-            reader.readAsText(file);
-        }
-
-        // ==================== 辅助函数 ====================
-        function validateConfig() {
-            if (!githubConfig.token || !githubConfig.owner || !githubConfig.repo) {
-                showToast('请先配置 GitHub 信息', 'error');
-                document.getElementById('configPanel').scrollIntoView({ behavior: 'smooth' });
-                return false;
-            }
-            return true;
-        }
-
-        function validateData(data) {
-            if (!data || typeof data !== 'object') {
-                showToast('无效的数据格式', 'error');
-                return false;
-            }
-            return true;
-        }
-
-        function restoreData(data) {
-            projects = data.projects || [];
-            leaveRecords = data.leaveRecords || [];
+        // ==================== 工作量视图渲染 ====================
+        function renderWorkload() {
+            const grid = document.getElementById('workloadGrid');
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            const sp = data.selectedPeople || {};
-            selectedPeople = {
-                pm: sp.pm || null,
-                client: sp.client || null,
-                support: new Set(sp.support || []),
-                leave: new Set(sp.leave || [])
-            };
-            
-            if (data.currentDate) {
-                currentDate = new Date(data.currentDate);
+            // 表头
+            let html = '<div class="workload-header">人员</div>';
+            for (let d = 1; d <= daysInMonth; d++) {
+                html += `<div class="workload-header">${d}</div>`;
             }
-
-            renderPeople();
-            renderCalendar();
-            updateStats();
+            
+            // 所有人员
+            const allPeople = [...new Set([...pmList, ...clientList, ...supportList])];
+            
+            allPeople.forEach(person => {
+                html += `<div class="workload-name">${person}</div>`;
+                
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const dayProjects = getDayProjects(dateStr);
+                    const personProjects = dayProjects.filter(p => p.people.includes(person));
+                    
+                    if (personProjects.length === 0) {
+                        html += `<div class="workload-cell empty" onclick="openModal('${dateStr}', '${person}')"></div>`;
+                    } else {
+                        const p = personProjects[0]; // 取第一个项目显示
+                        const classes = getWorkloadCellClass(p);
+                        const title = `${p.name} (${getPhaseText(p)})`;
+                        html += `<div class="workload-cell ${classes}" title="${title}" onclick="editProject(${p.id})"></div>`;
+                    }
+                }
+            });
+            
+            grid.innerHTML = html;
         }
 
-        function updateSyncStatus(text, type) {
-            const status = document.getElementById('syncStatus');
-            status.textContent = `${type === 'success' ? '🟢' : type === 'error' ? '🔴' : '⚪'} ${text}`;
-            status.className = `sync-status ${type === 'success' ? 'online' : type === 'error' ? 'offline' : ''}`;
+        function getWorkloadCellClass(project) {
+            if (project.phase === 'leave') return 'leave';
+            if (project.phase === 'proposal') return 'proposal';
+            if (project.phase === 'prep') {
+                const intensity = project.equipment || 40;
+                if (intensity <= 30) return 'prep-light';
+                if (intensity >= 50) return 'prep-heavy';
+                return 'prep-medium';
+            }
+            if (project.phase === 'impact') return 'impact';
+            return '';
+        }
+
+        function getPhaseText(project) {
+            if (project.phase === 'leave') return '休假';
+            if (project.phase === 'proposal') return '方案40%';
+            if (project.phase === 'prep') return `准备${project.equipment || 40}%`;
+            if (project.phase === 'impact') return '冲击80%';
+            return '';
         }
 
         // ==================== 人员渲染 ====================
@@ -1082,20 +864,14 @@
                        title="${isCore ? '核心角色' : ''}">${support}${isCore ? '*' : ''}</span>`;
             }).join('');
 
-            const leaveContainer = document.getElementById('leaveList');
-            leaveContainer.innerHTML = leaveTypes.map(leave => 
-                `<span class="person-tag leave-tag ${selectedPeople.leave.has(leave) ? 'selected' : ''}" 
-                       onclick="toggleMultiple('leave', '${leave}', this)">${leave}</span>`
-            ).join('');
-
             updateCounts();
         }
 
         function selectSingle(type, name) {
             selectedPeople[type] = selectedPeople[type] === name ? null : name;
             renderPeople();
-            renderCalendar();
-            updateStats();
+            if (currentView === 'calendar') renderCalendar();
+            else renderWorkload();
         }
 
         function toggleMultiple(type, name, element) {
@@ -1107,15 +883,14 @@
                 element.classList.add('selected');
             }
             updateCounts();
-            renderCalendar();
-            updateStats();
+            if (currentView === 'calendar') renderCalendar();
+            else renderWorkload();
         }
 
         function updateCounts() {
             const coreCount = (selectedPeople.pm ? 1 : 0) + (selectedPeople.client ? 1 : 0);
             document.getElementById('coreCount').textContent = `已选: ${coreCount}/2人`;
             document.getElementById('supportCount').textContent = `已选: ${selectedPeople.support.size}人`;
-            document.getElementById('leaveCount').textContent = `已选: ${selectedPeople.leave.size}人`;
         }
 
         // ==================== 日历渲染 ====================
@@ -1144,175 +919,301 @@
             dayElement.className = 'calendar-day';
             
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const isLeaveDay = checkIfLeaveDay(dateStr);
+            const dayProjects = getDayProjects(dateStr);
             
-            if (isLeaveDay) dayElement.classList.add('disabled');
+            // 检查是否有休假项目
+            const hasLeave = dayProjects.some(p => p.phase === 'leave');
+            if (hasLeave) dayElement.classList.add('disabled');
 
             let html = `<div class="day-number">${day}</div>`;
             
-            const dayProjects = projects.filter(p => {
+            // 显示项目列表（可点击编辑）
+            dayProjects.forEach(project => {
+                const classes = getProjectItemClass(project);
+                const title = `${project.name} - ${project.people.join(', ')}`;
+                html += `<div class="project-item ${classes}" title="${title}" onclick="event.stopPropagation(); editProject(${project.id})">
+                    ${project.name}
+                </div>`;
+            });
+
+            // 冲击标识
+            const hasImpact = dayProjects.some(p => p.phase === 'impact') || 
+                             (selectedPeople.support.size > 0 && dayProjects.some(p => 
+                                p.people.some(person => supportList.includes(person))));
+            
+            if (hasImpact && !hasLeave) {
+                html += `<div class="impact-marker"></div>`;
+            }
+
+            dayElement.innerHTML = html;
+            
+            // 点击空白处添加新项目
+            if (!hasLeave) {
+                dayElement.onclick = () => openModal(dateStr);
+            }
+            
+            return dayElement;
+        }
+
+        function getDayProjects(dateStr) {
+            return projects.filter(p => {
                 const start = new Date(p.startDate);
                 const end = new Date(p.endDate);
                 const current = new Date(dateStr);
                 return current >= start && current <= end;
             });
+        }
 
-            dayProjects.forEach(project => {
-                const { class: phaseClass, text: phaseText } = getPhaseInfo(project);
-                html += `<span class="phase-indicator ${phaseClass}">${phaseText}</span>`;
-            });
-
-            const hasImpact = dayProjects.some(p => p.phase === 'impact') || 
-                             (selectedPeople.support.size > 0 && dayProjects.some(p => 
-                                p.people.some(person => supportList.includes(person))));
-            
-            if (hasImpact && !isLeaveDay) html += `<div class="impact-marker"></div>`;
-
-            const involvedPeople = new Set();
-            dayProjects.forEach(p => p.people.forEach(person => involvedPeople.add(person)));
-            
-            if (involvedPeople.size > 0) {
-                html += `<div class="person-avatars">`;
-                involvedPeople.forEach(person => {
-                    html += `<div class="mini-avatar" style="background: ${getPersonColor(person)}">${person.charAt(0)}</div>`;
-                });
-                html += `</div>`;
+        function getProjectItemClass(project) {
+            if (project.phase === 'leave') return 'leave';
+            if (project.phase === 'proposal') return 'proposal';
+            if (project.phase === 'prep') {
+                const intensity = project.equipment || 40;
+                if (intensity <= 30) return 'prep-light';
+                if (intensity >= 50) return 'prep-heavy';
+                return 'prep-medium';
             }
-
-            dayElement.innerHTML = html;
-            if (!isLeaveDay) dayElement.onclick = () => openModal(dateStr);
-            
-            return dayElement;
-        }
-
-        function getPhaseInfo(project) {
-            switch(project.phase) {
-                case 'proposal': return { class: 'phase-proposal', text: '方案 40%' };
-                case 'prep':
-                    const intensity = project.equipment || 40;
-                    let cls = 'phase-prep-medium';
-                    if (intensity <= 30) cls = 'phase-prep-light';
-                    else if (intensity >= 50) cls = 'phase-prep-heavy';
-                    return { class: cls, text: `准备 ${intensity}%` };
-                case 'impact': return { class: 'phase-impact', text: '冲击 80%' };
-                default: return { class: '', text: '' };
-            }
-        }
-
-        function checkIfLeaveDay(dateStr) {
-            return leaveRecords.some(leave => {
-                const start = new Date(leave.startDate);
-                const end = new Date(leave.endDate);
-                const current = new Date(dateStr);
-                return current >= start && current <= end;
-            });
-        }
-
-        function getPersonColor(name) {
-            if (pmList.includes(name)) return '#1976d2';
-            if (clientList.includes(name)) return '#388e3c';
-            if (supportList.includes(name)) return '#f57c00';
-            return '#999';
+            if (project.phase === 'impact') return 'impact';
+            return '';
         }
 
         function changeMonth(delta) {
             currentDate.setMonth(currentDate.getMonth() + delta);
-            renderCalendar();
+            if (currentView === 'calendar') renderCalendar();
+            else renderWorkload();
         }
 
-        // ==================== 模态框 ====================
-        function openModal(dateStr = null) {
-            if (dateStr && checkIfLeaveDay(dateStr)) {
-                showToast('该日期为休假日，无法添加项目！', 'error');
-                return;
+        // ==================== 模态框功能 ====================
+        function openModal(dateStr = null, preselectPerson = null) {
+            // 检查是否是休假日
+            if (dateStr) {
+                const dayProjects = getDayProjects(dateStr);
+                if (dayProjects.some(p => p.phase === 'leave')) {
+                    showToast('该日期为休假日，无法添加项目！', 'error');
+                    return;
+                }
             }
 
             document.getElementById('projectModal').style.display = 'flex';
+            document.getElementById('modalTitle').textContent = '添加新项目';
+            document.getElementById('projectId').value = '';
+            document.getElementById('deleteBtn').style.display = 'none';
             
-            const container = document.getElementById('personCheckboxes');
-            let html = '<div style="width: 100%; margin-bottom: 10px;"><strong>项目经理</strong></div>';
-            pmList.forEach(pm => html += `<label class="checkbox-item"><input type="checkbox" value="${pm}">${pm}</label>`);
+            renderPersonCheckboxes(preselectPerson);
+            updatePhaseOptions();
             
-            html += '<div style="width: 100%; margin: 10px 0;"><strong>客户负责人</strong></div>';
-            clientList.forEach(client => html += `<label class="checkbox-item"><input type="checkbox" value="${client}">${client}</label>`);
-            
-            html += '<div style="width: 100%; margin: 10px 0;"><strong>项目支持（可选）</strong></div>';
-            supportList.forEach(support => html += `<label class="checkbox-item"><input type="checkbox" value="${support}">${support}</label>`);
-            
-            container.innerHTML = html;
-
             if (dateStr) {
                 document.getElementById('startDate').value = dateStr;
                 document.getElementById('endDate').value = dateStr;
+            } else {
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
             }
+        }
+
+        function editProject(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+
+            document.getElementById('projectModal').style.display = 'flex';
+            document.getElementById('modalTitle').textContent = '编辑项目';
+            document.getElementById('projectId').value = project.id;
+            document.getElementById('projectName').value = project.name;
+            document.getElementById('projectPhase').value = project.phase;
+            document.getElementById('startDate').value = project.startDate;
+            document.getElementById('endDate').value = project.endDate;
+            document.getElementById('deleteBtn').style.display = 'block';
+            
+            if (project.equipment) {
+                document.getElementById('equipmentCount').value = project.equipment;
+            }
+            
+            updatePhaseOptions();
+            renderPersonCheckboxes(null, project.people);
+        }
+
+        function renderPersonCheckboxes(preselectPerson = null, selected = []) {
+            const container = document.getElementById('personCheckboxes');
+            let html = '<div style="width: 100%; margin-bottom: 10px;"><strong>项目经理</strong></div>';
+            
+            pmList.forEach(pm => {
+                const isChecked = selected.includes(pm) || (preselectPerson === pm) ? 'checked' : '';
+                html += `<label class="checkbox-item"><input type="checkbox" value="${pm}" ${isChecked}>${pm}</label>`;
+            });
+            
+            html += '<div style="width: 100%; margin: 10px 0;"><strong>客户负责人</strong></div>';
+            clientList.forEach(client => {
+                const isChecked = selected.includes(client) || (preselectPerson === client) ? 'checked' : '';
+                html += `<label class="checkbox-item"><input type="checkbox" value="${client}" ${isChecked}>${client}</label>`;
+            });
+            
+            html += '<div style="width: 100%; margin: 10px 0;"><strong>项目支持（可选）</strong></div>';
+            supportList.forEach(support => {
+                const isChecked = selected.includes(support) || (preselectPerson === support) ? 'checked' : '';
+                html += `<label class="checkbox-item"><input type="checkbox" value="${support}" ${isChecked}>${support}</label>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function updatePhaseOptions() {
+            const phase = document.getElementById('projectPhase').value;
+            document.getElementById('equipmentGroup').style.display = phase === 'prep' ? 'block' : 'none';
+            document.getElementById('leaveTypeGroup').style.display = phase === 'leave' ? 'block' : 'none';
         }
 
         function closeModal() {
             document.getElementById('projectModal').style.display = 'none';
-            document.getElementById('projectName').value = '';
         }
 
-        function updatePhaseOptions() {
-            document.getElementById('equipmentGroup').style.display = 
-                document.getElementById('projectPhase').value === 'prep' ? 'block' : 'none';
-        }
-
-        function addProject() {
+        function saveProject() {
+            const id = document.getElementById('projectId').value;
             const name = document.getElementById('projectName').value;
             const phase = document.getElementById('projectPhase').value;
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
-            const equipment = document.getElementById('equipmentCount')?.value;
 
             if (!name || !startDate || !endDate) {
                 showToast('请填写完整信息', 'error');
                 return;
             }
 
+            // 检查休假日冲突（休假项目除外）
+            if (phase !== 'leave') {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                    const dateStr = d.toISOString().split('T')[0];
+                    const dayProjects = getDayProjects(dateStr);
+                    if (dayProjects.some(p => p.phase === 'leave')) {
+                        showToast(`日期范围包含休假日 (${dateStr})`, 'error');
+                        return;
+                    }
+                }
+            }
+
             const checkboxes = document.querySelectorAll('#personCheckboxes input:checked');
-            const selected = Array.from(checkboxes).map(cb => cb.value);
-            if (selected.length === 0) {
+            const selectedPeople = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedPeople.length === 0) {
                 showToast('请至少选择一名人员', 'error');
                 return;
             }
 
-            projects.push({
-                id: Date.now(),
-                name, phase, startDate, endDate,
-                people: selected,
-                equipment: equipment || null
-            });
+            const projectData = {
+                id: id ? parseInt(id) : Date.now(),
+                name: phase === 'leave' ? document.getElementById('leaveType').value : name,
+                phase,
+                startDate,
+                endDate,
+                people: selectedPeople,
+                equipment: phase === 'prep' ? document.getElementById('equipmentCount').value : null
+            };
+
+            if (id) {
+                // 更新
+                const index = projects.findIndex(p => p.id === parseInt(id));
+                if (index !== -1) projects[index] = projectData;
+                showToast('项目更新成功！', 'success');
+            } else {
+                // 新增
+                projects.push(projectData);
+                showToast('项目添加成功！', 'success');
+            }
 
             closeModal();
-            renderCalendar();
-            updateStats();
-            showToast('项目添加成功！点击"保存并推送"同步到云端', 'success');
+            if (currentView === 'calendar') renderCalendar();
+            else renderWorkload();
         }
 
-        function updateStats() {
-            const stats = {};
-            [...new Set([...pmList, ...clientList, ...supportList])].forEach(p => stats[p] = { total: 0 });
+        function deleteProject() {
+            const id = document.getElementById('projectId').value;
+            if (!id) return;
             
-            projects.forEach(p => {
-                const days = Math.ceil((new Date(p.endDate) - new Date(p.startDate)) / 86400000) + 1;
-                const load = p.phase === 'proposal' ? 0.4 : p.phase === 'prep' ? (p.equipment || 40)/100 : 0.8;
-                p.people.forEach(person => { if(stats[person]) stats[person].total += days * load; });
-            });
-
-            const container = document.getElementById('workloadStats');
-            container.innerHTML = Object.entries(stats).map(([person, data]) => {
-                if (data.total === 0 && !isPersonSelected(person)) return '';
-                const pct = Math.min((data.total / 20) * 100, 100);
-                return `
-                    <div class="stat-item"><span>${person}</span><span>${data.total.toFixed(1)} 人天</span></div>
-                    <div class="progress-bar"><div class="progress-fill" style="width: ${pct}%; background: ${getPersonColor(person)}"></div></div>
-                `;
-            }).join('') || '<p style="color: #999; text-align: center;">暂无数据</p>';
+            if (!confirm('确定要删除此项目吗？')) return;
+            
+            projects = projects.filter(p => p.id !== parseInt(id));
+            closeModal();
+            if (currentView === 'calendar') renderCalendar();
+            else renderWorkload();
+            showToast('项目已删除', 'success');
         }
 
-        function isPersonSelected(person) {
-            return selectedPeople.pm === person || selectedPeople.client === person ||
-                   selectedPeople.support.has(person) || selectedPeople.leave.has(person);
+        // ==================== 导入导出同步 ====================
+        function exportData() {
+            const data = {
+                version: '1.0',
+                exportTime: new Date().toISOString(),
+                projects: projects,
+                selectedPeople: {
+                    pm: selectedPeople.pm,
+                    client: selectedPeople.client,
+                    support: Array.from(selectedPeople.support)
+                },
+                currentDate: currentDate.toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `项目数据_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('数据已导出', 'success');
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            event.target.value = '';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.projects) {
+                        projects = data.projects;
+                        if (data.selectedPeople) {
+                            selectedPeople.pm = data.selectedPeople.pm || null;
+                            selectedPeople.client = data.selectedPeople.client || null;
+                            selectedPeople.support = new Set(data.selectedPeople.support || []);
+                        }
+                        if (data.currentDate) currentDate = new Date(data.currentDate);
+                        
+                        renderPeople();
+                        if (currentView === 'calendar') renderCalendar();
+                        else renderWorkload();
+                        showToast('数据导入成功！', 'success');
+                    }
+                } catch (err) {
+                    showToast('导入失败: ' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function syncData() {
+            showToast('正在同步...', 'success');
+            try {
+                const response = await fetch('./data.json', { cache: 'no-cache' });
+                if (!response.ok) throw new Error('未找到数据文件');
+                const data = await response.json();
+                
+                if (data.projects) {
+                    projects = data.projects;
+                    if (data.selectedPeople) {
+                        selectedPeople.pm = data.selectedPeople.pm || null;
+                        selectedPeople.client = data.selectedPeople.client || null;
+                        selectedPeople.support = new Set(data.selectedPeople.support || []);
+                    }
+                    renderPeople();
+                    if (currentView === 'calendar') renderCalendar();
+                    else renderWorkload();
+                    showToast('同步成功！', 'success');
+                }
+            } catch (err) {
+                showToast('同步失败: ' + err.message, 'error');
+            }
         }
 
         function showToast(message, type = 'success') {
@@ -1324,7 +1225,7 @@
         }
 
         window.onclick = e => {
-            if (e.target.classList.contains('modal')) e.target.style.display = 'none';
+            if (e.target.classList.contains('modal')) closeModal();
         };
 
         init();
