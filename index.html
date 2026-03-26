@@ -27,6 +27,15 @@
         }
         .workload-warning { background: #f59e0b; }
         .workload-danger { background: #ef4444; }
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: none; align-items: center; justify-content: center; z-index: 50;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; padding: 24px; border-radius: 16px;
+            width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -35,12 +44,14 @@
     <div class="flex justify-between items-center max-w-7xl mx-auto">
         <h1 class="text-xl font-bold text-indigo-600">项目周期管理系统</h1>
         <div class="flex gap-2">
-            <button onclick="exportData()" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm">导出JSON</button>
-            <label class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm cursor-pointer">
+            <button onclick="openAddModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700">
+                + 添加项目
+            </button>
+            <button onclick="exportData()" class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">导出JSON</button>
+            <label class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm cursor-pointer hover:bg-blue-600">
                 导入JSON
                 <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(this)">
             </label>
-            <button onclick="addSample()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm">添加示例</button>
         </div>
     </div>
 </nav>
@@ -52,12 +63,8 @@
         <div id="personList" class="space-y-2"></div>
         
         <div class="mt-6 p-3 bg-blue-50 rounded-lg text-sm text-blue-800">
-            <p class="font-semibold mb-2">使用说明：</p>
-            <ul class="list-disc list-inside text-xs space-y-1">
-                <li>点击日期查看详情</li>
-                <li>导出JSON备份数据</li>
-                <li>导入JSON恢复数据</li>
-            </ul>
+            <p class="font-semibold mb-2">当前项目</p>
+            <div id="projectList" class="space-y-2 text-xs"></div>
         </div>
     </aside>
 
@@ -66,8 +73,8 @@
         <div class="flex justify-between items-center mb-4">
             <h2 id="currentMonth" class="text-2xl font-bold">2026年4月</h2>
             <div class="flex gap-2">
-                <button onclick="changeMonth(-1)" class="px-3 py-1 border rounded hover:bg-slate-100">←</button>
-                <button onclick="changeMonth(1)" class="px-3 py-1 border rounded hover:bg-slate-100">→</button>
+                <button onclick="changeMonth(-1)" class="px-3 py-1 border rounded hover:bg-slate-100">←上月</button>
+                <button onclick="changeMonth(1)" class="px-3 py-1 border rounded hover:bg-slate-100">下月→</button>
             </div>
         </div>
         
@@ -80,21 +87,86 @@
     </main>
 </div>
 
+<!-- 添加项目模态框 -->
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">添加新项目</h3>
+            <button onclick="closeAddModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">项目名称</label>
+                <input type="text" id="projName" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="例如：数字化转型项目">
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">负责人</label>
+                <select id="projOwner" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"></select>
+            </div>
+            
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <label class="block text-sm font-medium text-amber-900 mb-2">阶段1：方案阶段（高节奏 80-100%）</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="date" id="phase1Start" class="border border-amber-300 rounded px-2 py-1 text-sm">
+                    <input type="date" id="phase1End" class="border border-amber-300 rounded px-2 py-1 text-sm">
+                </div>
+                <select id="phase1Load" class="w-full border border-amber-300 rounded px-2 py-1 text-sm">
+                    <option value="80">80%</option>
+                    <option value="90" selected>90%</option>
+                    <option value="100">100%</option>
+                </select>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <label class="block text-sm font-medium text-blue-900 mb-2">阶段2：准备阶段（可控 30-70%）</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="date" id="phase2Start" class="border border-blue-300 rounded px-2 py-1 text-sm">
+                    <input type="date" id="phase2End" class="border border-blue-300 rounded px-2 py-1 text-sm">
+                </div>
+                <select id="phase2Load" class="w-full border border-blue-300 rounded px-2 py-1 text-sm">
+                    <option value="30">30%</option>
+                    <option value="50" selected>50%</option>
+                    <option value="70">70%</option>
+                </select>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                <label class="block text-sm font-medium text-red-900 mb-2">阶段3：冲击阶段（极高 100-120%）</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <input type="date" id="phase3Start" class="border border-red-300 rounded px-2 py-1 text-sm">
+                    <input type="date" id="phase3End" class="border border-red-300 rounded px-2 py-1 text-sm">
+                </div>
+                <select id="phase3Load" class="w-full border border-red-300 rounded px-2 py-1 text-sm">
+                    <option value="100">100%</option>
+                    <option value="110" selected>110%</option>
+                    <option value="120">120%</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="flex gap-3 mt-6">
+            <button onclick="closeAddModal()" class="flex-1 px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-50">取消</button>
+            <button onclick="saveProject()" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">保存项目</button>
+        </div>
+    </div>
+</div>
+
 <script>
-const personnel = ['张伟', '李娜', '王强', '刘洋', '陈静', '王总监', '李总监'];
+const personnel = ['刘絮', 'Huanhuan', '潘潘', 'Kathy', '思璇', 'Miles',];
 let projects = [];
 let currentDate = new Date(2026, 3, 1);
-let selectedPerson = '张伟';
-const STORAGE_KEY = 'pm_data_v1';
+let selectedPerson = personnel[0];
+const STORAGE_KEY = 'pm_data_v2';
 
-// 初始化
 function init() {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        projects = JSON.parse(saved).projects || [];
-    }
+    if (saved) projects = JSON.parse(saved).projects || [];
     renderPersonList();
+    renderProjectList();
     renderCalendar();
+    updateModalOwners();
 }
 
 function renderPersonList() {
@@ -107,6 +179,18 @@ function renderPersonList() {
     `).join('');
 }
 
+function renderProjectList() {
+    const div = document.getElementById('projectList');
+    const personProjects = projects.filter(p => p.owner === selectedPerson);
+    div.innerHTML = personProjects.length === 0 ? '<p class="text-slate-400">暂无项目</p>' : 
+        personProjects.map(p => `
+            <div class="bg-white p-2 rounded border">
+                <div class="font-medium">${p.name}</div>
+                <button onclick="deleteProject(${p.id})" class="text-red-500 text-xs mt-1 hover:underline">删除</button>
+            </div>
+        `).join('');
+}
+
 function calculateLoad(person) {
     let total = 0, days = 0;
     const year = currentDate.getFullYear();
@@ -116,9 +200,7 @@ function calculateLoad(person) {
     for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, month, d);
         if (date.getDay() === 0 || date.getDay() === 6) continue;
-        
-        const load = getDayLoad(date, person);
-        total += load;
+        total += getDayLoad(date, person);
         days++;
     }
     return days > 0 ? Math.round(total / days) : 0;
@@ -130,9 +212,7 @@ function getDayLoad(date, person) {
     projects.forEach(p => {
         if (p.owner !== person) return;
         Object.values(p.phases).forEach(phase => {
-            if (dateStr >= phase.start && dateStr <= phase.end) {
-                load += phase.load;
-            }
+            if (dateStr >= phase.start && dateStr <= phase.end) load += phase.load;
         });
     });
     return load;
@@ -145,12 +225,14 @@ function formatDate(d) {
 function selectPerson(p) {
     selectedPerson = p;
     renderPersonList();
+    renderProjectList();
     renderCalendar();
 }
 
 function changeMonth(delta) {
     currentDate.setMonth(currentDate.getMonth() + delta);
     renderCalendar();
+    renderPersonList();
 }
 
 function renderCalendar() {
@@ -163,23 +245,21 @@ function renderCalendar() {
     const grid = document.getElementById('calendar');
     grid.innerHTML = '';
     
-    // Empty cells
     for (let i = 0; i < firstDay; i++) {
-        grid.appendChild(createDay(0, true));
+        const div = document.createElement('div');
+        div.className = 'calendar-day other-month';
+        grid.appendChild(div);
     }
     
-    // Days
     for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, month, d);
-        grid.appendChild(createDay(d, false, date));
+        grid.appendChild(createDay(d, date));
     }
 }
 
-function createDay(day, empty, date) {
+function createDay(day, date) {
     const div = document.createElement('div');
-    div.className = 'calendar-day' + (empty ? ' other-month' : '') + (date && (date.getDay() === 0 || date.getDay() === 6) ? ' weekend' : '');
-    
-    if (empty) return div;
+    div.className = 'calendar-day' + (date.getDay() === 0 || date.getDay() === 6 ? ' weekend' : '');
     
     const load = getDayLoad(date, selectedPerson);
     const dayProjects = getDayProjects(date, selectedPerson);
@@ -219,49 +299,116 @@ function showDetail(date, list) {
     div.classList.remove('hidden');
     div.innerHTML = `
         <h3 class="font-bold text-lg mb-3">${date.getMonth() + 1}月${date.getDate()}日 详情</h3>
-        ${list.length === 0 ? '<p class="text-slate-500">无项目</p>' : list.map(p => `
-            <div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2">
-                <span>${p.name} - ${p.phase}</span>
-                <span class="font-bold ${p.load > 100 ? 'text-red-600' : ''}">${p.load}%</span>
-            </div>
-        `).join('')}
+        ${list.length === 0 ? '<p class="text-slate-500">无项目</p>' : 
+            list.map(p => `
+                <div class="flex justify-between items-center p-2 bg-slate-50 rounded mb-2">
+                    <span>${p.name} - ${p.phase}</span>
+                    <span class="font-bold ${p.load > 100 ? 'text-red-600' : ''}">${p.load}%</span>
+                </div>
+            `).join('')}
     `;
 }
 
-function addSample() {
-    projects = [
-        {
-            id: 1, name: '数字化转型', owner: '张伟',
-            phases: {
-                proposal: { start: '2026-04-01', end: '2026-04-14', load: 90 },
-                preparation: { start: '2026-04-15', end: '2026-05-15', load: 50 },
-                sprint: { start: '2026-05-16', end: '2026-05-30', load: 110 }
-            }
-        },
-        {
-            id: 2, name: '系统升级', owner: '李娜',
-            phases: {
-                proposal: { start: '2026-04-10', end: '2026-04-25', load: 80 },
-                preparation: { start: '2026-04-26', end: '2026-06-05', load: 60 },
-                sprint: { start: '2026-06-06', end: '2026-06-19', load: 100 }
-            }
-        }
-    ];
-    saveData();
-    renderPersonList();
-    renderCalendar();
-    alert('已添加示例数据');
+// ========== 新增：模态框功能 ==========
+function openAddModal() {
+    document.getElementById('addModal').classList.add('active');
+    // 设置默认日期
+    const today = new Date();
+    document.getElementById('phase1Start').value = formatDate(today);
+    document.getElementById('phase1End').value = formatDate(new Date(today.getTime() + 14 * 86400000));
+    document.getElementById('phase2Start').value = formatDate(new Date(today.getTime() + 15 * 86400000));
+    document.getElementById('phase2End').value = formatDate(new Date(today.getTime() + 45 * 86400000));
+    document.getElementById('phase3Start').value = formatDate(new Date(today.getTime() + 46 * 86400000));
+    document.getElementById('phase3End').value = formatDate(new Date(today.getTime() + 60 * 86400000));
 }
 
+function closeAddModal() {
+    document.getElementById('addModal').classList.remove('active');
+    clearForm();
+}
+
+function updateModalOwners() {
+    const select = document.getElementById('projOwner');
+    select.innerHTML = personnel.map(p => `<option value="${p}" ${p === selectedPerson ? 'selected' : ''}>${p}</option>`).join('');
+}
+
+function clearForm() {
+    document.getElementById('projName').value = '';
+    document.getElementById('phase1Load').value = '90';
+    document.getElementById('phase2Load').value = '50';
+    document.getElementById('phase3Load').value = '110';
+}
+
+function saveProject() {
+    const name = document.getElementById('projName').value.trim();
+    const owner = document.getElementById('projOwner').value;
+    
+    if (!name) {
+        alert('请输入项目名称');
+        return;
+    }
+    
+    const newProject = {
+        id: Date.now(),
+        name: name,
+        owner: owner,
+        phases: {
+            proposal: {
+                start: document.getElementById('phase1Start').value,
+                end: document.getElementById('phase1End').value,
+                load: parseInt(document.getElementById('phase1Load').value)
+            },
+            preparation: {
+                start: document.getElementById('phase2Start').value,
+                end: document.getElementById('phase2End').value,
+                load: parseInt(document.getElementById('phase2Load').value)
+            },
+            sprint: {
+                start: document.getElementById('phase3Start').value,
+                end: document.getElementById('phase3End').value,
+                load: parseInt(document.getElementById('phase3Load').value)
+            }
+        }
+    };
+    
+    projects.push(newProject);
+    saveData();
+    closeAddModal();
+    renderPersonList();
+    renderProjectList();
+    renderCalendar();
+    showToast('项目添加成功！');
+}
+
+function deleteProject(id) {
+    if (confirm('确定删除这个项目吗？')) {
+        projects = projects.filter(p => p.id !== id);
+        saveData();
+        renderPersonList();
+        renderProjectList();
+        renderCalendar();
+    }
+}
+
+function showToast(msg) {
+    const div = document.createElement('div');
+    div.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+    div.textContent = msg;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+
+// ========== 导入导出 ==========
 function exportData() {
     const data = { projects, exportTime: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `备份_${new Date().toLocaleDateString()}.json`;
+    a.download = `项目备份_${new Date().toLocaleDateString()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast('导出成功！');
 }
 
 function importData(input) {
@@ -269,12 +416,19 @@ function importData(input) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = function(e) {
-        const data = JSON.parse(e.target.result);
-        projects = data.projects || [];
-        saveData();
-        renderPersonList();
-        renderCalendar();
-        alert('导入成功');
+        try {
+            const data = JSON.parse(e.target.result);
+            if (confirm(`确定导入 ${data.projects?.length || 0} 个项目？将覆盖现有数据。`)) {
+                projects = data.projects || [];
+                saveData();
+                renderPersonList();
+                renderProjectList();
+                renderCalendar();
+                showToast('导入成功！');
+            }
+        } catch (err) {
+            alert('文件格式错误：' + err.message);
+        }
     };
     reader.readAsText(file);
     input.value = '';
