@@ -107,13 +107,12 @@
             border: 2px solid #e0e0e0;
         }
 
-        /* ==================== 工作量视图样式 ==================== */
-        .workload-container {
+        /* ==================== 简化工作量视图 ==================== */
+        .workload-simple {
             background: white;
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow-x: auto;
         }
 
         .workload-header {
@@ -123,140 +122,77 @@
             margin-bottom: 20px;
         }
 
-        .workload-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .workload-legend {
-            display: flex;
-            gap: 15px;
-            font-size: 0.85em;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .legend-color {
-            width: 16px;
-            height: 16px;
-            border-radius: 4px;
-        }
-
-        .workload-grid {
+        .workload-grid-simple {
             display: grid;
-            /* 第一列人员名称固定宽度，后面每列日期40px */
-            grid-template-columns: 120px repeat(31, 35px);
-            gap: 2px;
-            min-width: max-content;
+            grid-template-columns: 100px repeat(31, 1fr);
+            gap: 3px;
         }
 
-        .workload-cell {
-            min-height: 45px;
+        .workload-cell-simple {
+            min-height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75em;
+            font-size: 0.85em;
+            font-weight: bold;
             border-radius: 4px;
             position: relative;
-            transition: all 0.2s;
         }
 
-        .workload-cell:hover {
-            transform: scale(1.15);
-            z-index: 10;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
-        /* 人员名称列 - 固定 */
-        .workload-person {
+        .workload-person-simple {
             background: #667eea;
             color: white;
-            font-weight: bold;
             font-size: 0.9em;
             position: sticky;
             left: 0;
-            z-index: 20;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            z-index: 10;
         }
 
-        /* 日期表头 */
-        .workload-date-header {
+        .workload-date-header-simple {
             background: #f5f5f5;
             color: #666;
-            font-weight: bold;
             font-size: 0.7em;
-            writing-mode: vertical-rl;
-            text-orientation: mixed;
-            padding: 5px 0;
+            padding: 5px;
         }
 
-        .workload-date-header.weekend {
+        .workload-date-header-simple.weekend {
             background: #ffebee;
             color: #d32f2f;
         }
 
-        /* 工作量状态颜色 */
-        .workload-empty {
-            background: #f0f0f0;
-            cursor: pointer;
-        }
-
-        .workload-proposal {
-            background: #e1bee7;
-            color: #6a1b9a;
-            font-weight: bold;
-        }
-
-        .workload-prep-30 {
+        /* 工作量颜色 - 只显示总负荷 */
+        .workload-low {
             background: #c8e6c9;
             color: #2e7d32;
         }
 
-        .workload-prep-40 {
+        .workload-medium {
             background: #81c784;
             color: #1b5e20;
         }
 
-        .workload-prep-50 {
-            background: #4caf50;
-            color: white;
-        }
-
-        .workload-impact {
-            background: #ffcdd2;
-            color: #c62828;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-        }
-
-        .workload-leave {
-            background: #ffebee;
-            color: #d32f2f;
-            text-decoration: line-through;
+        .workload-high {
+            background: #ffb74d;
+            color: #e65100;
         }
 
         .workload-overload {
             background: #ff5252;
             color: white;
-            font-weight: bold;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+        .workload-leave-simple {
+            background: #ffebee;
+            color: #d32f2f;
+            text-decoration: line-through;
         }
 
-        /* 工作量数值显示 */
-        .workload-value {
-            font-size: 0.65em;
+        .workload-empty-simple {
+            background: #f0f0f0;
+            color: #999;
         }
 
-        /* ==================== 日历视图样式 ==================== */
+        /* ==================== 日历视图 ==================== */
         .main-layout {
             display: grid;
             grid-template-columns: 300px 1fr;
@@ -317,6 +253,16 @@
         .person-tag.selected {
             color: white;
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* 选中状态 - 用于日历高亮关联 */
+        .person-tag.active-filter {
+            animation: glow 2s infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(102, 126, 234, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.8); }
         }
 
         .pm-tag {
@@ -400,6 +346,13 @@
             transform: scale(1.02);
         }
 
+        /* 关联人员高亮 */
+        .calendar-day.has-related-project {
+            border-color: #667eea;
+            border-width: 3px;
+            background: #f3f4ff;
+        }
+
         .calendar-day.disabled {
             background: #ffebee;
             border-color: #ffcdd2;
@@ -425,6 +378,12 @@
         .project-item:hover {
             transform: translateX(3px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* 关联项目高亮 */
+        .project-item.related-project {
+            box-shadow: 0 0 0 2px #667eea;
+            transform: scale(1.05);
         }
 
         .project-item.proposal {
@@ -457,6 +416,11 @@
             background: #ffebee;
             color: #d32f2f;
             text-decoration: line-through;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .impact-marker {
@@ -603,6 +567,16 @@
             color: #666;
             margin-left: auto;
         }
+
+        .filter-hint {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            font-size: 0.85em;
+            color: #1976d2;
+        }
     </style>
 </head>
 <body>
@@ -629,32 +603,31 @@
             <button class="btn btn-secondary" onclick="showView('workload')" id="workloadBtn">👥 工作量视图</button>
         </div>
 
-        <!-- 工作量视图 -->
-        <div id="workloadView" class="workload-container" style="display: none;">
+        <!-- 简化工作量视图 -->
+        <div id="workloadView" class="workload-simple" style="display: none;">
             <div class="workload-header">
-                <div class="workload-title">📈 单人工作量看板 - <span id="workloadMonth">2026年4月</span></div>
+                <div>
+                    <h3>📈 单人工作量看板</h3>
+                    <p style="color: #666; font-size: 0.9em;">只显示每日总工作量百分比</p>
+                </div>
                 <div class="month-nav">
                     <button class="btn btn-primary" onclick="changeWorkloadMonth(-1)">◀ 上月</button>
                     <button class="btn btn-primary" onclick="changeWorkloadMonth(1)">下月 ▶</button>
                 </div>
             </div>
             
-            <div class="workload-legend">
-                <div class="legend-item"><div class="legend-color" style="background: #e1bee7;"></div>方案40%</div>
-                <div class="legend-item"><div class="legend-color" style="background: #81c784;"></div>准备30-50%</div>
-                <div class="legend-item"><div class="legend-color" style="background: #ffcdd2;"></div>冲击80%</div>
-                <div class="legend-item"><div class="legend-color" style="background: #ffebee; border: 2px solid #ffcdd2;"></div>休假</div>
-                <div class="legend-item"><div class="legend-color" style="background: #ff5252;"></div>超负荷</div>
-            </div>
-
-            <div style="overflow-x: auto; margin-top: 15px;">
-                <div id="workloadGrid" class="workload-grid"></div>
+            <div style="overflow-x: auto;">
+                <div id="workloadGrid" class="workload-grid-simple"></div>
             </div>
         </div>
 
         <!-- 日历视图 -->
         <div class="main-layout" id="calendarLayout">
             <div class="sidebar">
+                <div class="filter-hint" id="filterHint" style="display: none;">
+                    💡 已选中 <span id="filterName"></span>，日历中高亮显示其相关项目
+                </div>
+
                 <div class="module">
                     <div class="module-title">
                         👥 核心角色
@@ -718,6 +691,10 @@
                     <div class="legend-item">
                         <div class="legend-color" style="background: #ffebee; border: 2px solid #ffcdd2;"></div>
                         <span>休假</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #667eea;"></div>
+                        <span>选中人员关联</span>
                     </div>
                 </div>
             </div>
@@ -796,6 +773,9 @@
         const clientList = ['鱼蛋', 'Huan', 'Daizy'];
         const supportList = ['Daizy', '鱼蛋', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles', 'Lizzy', 'Ella'];
         
+        // 需要统计工作量的7人
+        const workloadPeople = ['鱼蛋', 'Huan', 'Daizy', '潘潘', 'Kathy', '思璇', 'Miles'];
+        
         // ==================== 全局状态 ====================
         let currentDate = new Date(2026, 3, 1);
         let workloadDate = new Date(2026, 3, 1);
@@ -804,6 +784,8 @@
             client: null,
             support: new Set()
         };
+        // 当前用于过滤日历的人员
+        let activeFilterPerson = null;
         let projects = [];
         let currentView = 'calendar';
 
@@ -830,7 +812,7 @@
             }
         }
 
-        // ==================== 工作量视图 ====================
+        // ==================== 简化工作量视图 ====================
         function changeWorkloadMonth(delta) {
             workloadDate.setMonth(workloadDate.getMonth() + delta);
             renderWorkload();
@@ -841,50 +823,52 @@
             const month = workloadDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            document.getElementById('workloadMonth').textContent = `${year}年${month + 1}月`;
-            
             const grid = document.getElementById('workloadGrid');
-            
-            // 构建表头：人员名称 + 日期
             let html = '';
             
-            // 第一行：日期表头
-            html += '<div class="workload-cell workload-person">人员</div>';
+            // 表头：日期
+            html += '<div class="workload-cell-simple workload-person-simple">人员</div>';
             for (let d = 1; d <= daysInMonth; d++) {
                 const date = new Date(year, month, d);
                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                const dayClass = isWeekend ? 'workload-date-header weekend' : 'workload-date-header';
-                html += `<div class="workload-cell ${dayClass}">${d}</div>`;
+                const dayClass = isWeekend ? 'workload-date-header-simple weekend' : 'workload-date-header-simple';
+                html += `<div class="workload-cell-simple ${dayClass}">${d}</div>`;
             }
             
-            // 所有人员（合并去重）
-            const allPeople = [...new Set([...pmList, ...clientList, ...supportList])];
-            
-            allPeople.forEach(person => {
-                // 人员名称列
-                html += `<div class="workload-cell workload-person">${person}</div>`;
+            // 只显示需要统计的7人
+            workloadPeople.forEach(person => {
+                html += `<div class="workload-cell-simple workload-person-simple">${person}</div>`;
                 
-                // 每天的工作量
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    const cellData = getWorkloadCellData(person, dateStr);
+                    const totalLoad = calculateDailyWorkload(person, dateStr);
                     
-                    const cellClass = cellData.class;
-                    const title = cellData.title;
-                    const onclick = cellData.canEdit ? `onclick="openWorkloadModal('${dateStr}', '${person}')"` : '';
+                    let cellClass = 'workload-empty-simple';
+                    let displayValue = '';
                     
-                    html += `<div class="workload-cell ${cellClass}" title="${title}" ${onclick}>`;
-                    if (cellData.value) {
-                        html += `<span class="workload-value">${cellData.value}</span>`;
+                    if (totalLoad === -1) { // 休假
+                        cellClass = 'workload-leave-simple';
+                        displayValue = '休';
+                    } else if (totalLoad > 0) {
+                        displayValue = totalLoad + '%';
+                        if (totalLoad <= 40) cellClass = 'workload-low';
+                        else if (totalLoad <= 70) cellClass = 'workload-medium';
+                        else if (totalLoad <= 100) cellClass = 'workload-high';
+                        else {
+                            cellClass = 'workload-overload';
+                            displayValue = totalLoad + '%!';
+                        }
                     }
-                    html += `</div>`;
+                    
+                    html += `<div class="workload-cell-simple ${cellClass}">${displayValue}</div>`;
                 }
             });
             
             grid.innerHTML = html;
         }
 
-        function getWorkloadCellData(person, dateStr) {
+        // 计算单日总工作量，返回-1表示休假
+        function calculateDailyWorkload(person, dateStr) {
             const dayProjects = projects.filter(p => {
                 const start = new Date(p.startDate);
                 const end = new Date(p.endDate);
@@ -892,144 +876,70 @@
                 return current >= start && current <= end && p.people.includes(person);
             });
 
-            // 计算总工作量
-            let totalLoad = 0;
-            let titles = [];
-            
+            if (dayProjects.some(p => p.phase === 'leave')) return -1;
+
+            let total = 0;
             dayProjects.forEach(p => {
-                let load = 0;
-                let label = '';
-                
                 switch(p.phase) {
-                    case 'proposal':
-                        load = 40;
-                        label = '方案';
-                        break;
-                    case 'prep':
-                        load = parseInt(p.equipment) || 40;
-                        label = `准备${load}%`;
-                        break;
-                    case 'impact':
-                        load = 80;
-                        label = '冲击';
-                        break;
-                    case 'leave':
-                        load = 0;
-                        label = '休假';
-                        break;
+                    case 'proposal': total += 40; break;
+                    case 'prep': total += parseInt(p.equipment) || 40; break;
+                    case 'impact': total += 80; break;
                 }
-                
-                totalLoad += load;
-                titles.push(`${p.name}(${label})`);
             });
 
-            // 判断状态
-            if (dayProjects.some(p => p.phase === 'leave')) {
-                return {
-                    class: 'workload-leave',
-                    title: titles.join('\n'),
-                    value: '休',
-                    canEdit: false
-                };
-            }
-
-            if (totalLoad === 0) {
-                return {
-                    class: 'workload-empty',
-                    title: '点击添加项目',
-                    value: '',
-                    canEdit: true
-                };
-            }
-
-            if (totalLoad > 100) {
-                return {
-                    class: 'workload-overload',
-                    title: `超负荷: ${totalLoad}%\n${titles.join('\n')}`,
-                    value: totalLoad,
-                    canEdit: true
-                };
-            }
-
-            // 根据主要项目类型决定颜色
-            let mainClass = 'workload-empty';
-            const mainProject = dayProjects[0];
-            
-            if (mainProject) {
-                switch(mainProject.phase) {
-                    case 'proposal': mainClass = 'workload-proposal'; break;
-                    case 'prep':
-                        const eq = parseInt(mainProject.equipment) || 40;
-                        if (eq <= 30) mainClass = 'workload-prep-30';
-                        else if (eq >= 50) mainClass = 'workload-prep-50';
-                        else mainClass = 'workload-prep-40';
-                        break;
-                    case 'impact': mainClass = 'workload-impact'; break;
-                }
-            }
-
-            return {
-                class: mainClass,
-                title: `${totalLoad}%\n${titles.join('\n')}`,
-                value: totalLoad,
-                canEdit: true
-            };
+            return total;
         }
 
-        function openWorkloadModal(dateStr, person) {
-            // 检查是否是休假日
-            const dayProjects = getDayProjects(dateStr);
-            if (dayProjects.some(p => p.phase === 'leave')) {
-                showToast('该日期为休假日', 'error');
-                return;
-            }
-            
-            // 预选中该人员
-            openModal(dateStr, person);
-        }
-
-        // ==================== 日历视图 ====================
+        // ==================== 人员与日历关联 ====================
         function renderPeople() {
             const pmContainer = document.getElementById('pmList');
             pmContainer.innerHTML = pmList.map(pm => 
-                `<span class="person-tag pm-tag ${selectedPeople.pm === pm ? 'selected' : ''}" 
-                       onclick="selectSingle('pm', '${pm}')">${pm}</span>`
+                `<span class="person-tag pm-tag ${selectedPeople.pm === pm ? 'selected' : ''} ${activeFilterPerson === pm ? 'active-filter' : ''}" 
+                       onclick="selectPerson('pm', '${pm}')">${pm}</span>`
             ).join('');
 
             const clientContainer = document.getElementById('clientList');
             clientContainer.innerHTML = clientList.map(client => 
-                `<span class="person-tag client-tag ${selectedPeople.client === client ? 'selected' : ''}" 
-                       onclick="selectSingle('client', '${client}')">${client}</span>`
+                `<span class="person-tag client-tag ${selectedPeople.client === client ? 'selected' : ''} ${activeFilterPerson === client ? 'active-filter' : ''}" 
+                       onclick="selectPerson('client', '${client}')">${client}</span>`
             ).join('');
 
             const supportContainer = document.getElementById('supportList');
             supportContainer.innerHTML = supportList.map(support => {
                 const isSelected = selectedPeople.support.has(support);
                 const isCore = pmList.includes(support) || clientList.includes(support);
-                return `<span class="person-tag support-tag ${isSelected ? 'selected' : ''}" 
-                       onclick="toggleMultiple('support', '${support}', this)" 
+                return `<span class="person-tag support-tag ${isSelected ? 'selected' : ''} ${activeFilterPerson === support ? 'active-filter' : ''}" 
+                       onclick="selectPerson('support', '${support}')" 
                        title="${isCore ? '核心角色' : ''}">${support}${isCore ? '*' : ''}</span>`;
             }).join('');
 
             updateCounts();
+            updateFilterHint();
         }
 
-        function selectSingle(type, name) {
-            selectedPeople[type] = selectedPeople[type] === name ? null : name;
-            renderPeople();
-            if (currentView === 'calendar') renderCalendar();
-        }
-
-        function toggleMultiple(type, name, element) {
-            if (selectedPeople[type].has(name)) {
-                selectedPeople[type].delete(name);
-                element.classList.remove('selected');
-            } else {
-                selectedPeople[type].add(name);
-                element.classList.add('selected');
+        function selectPerson(type, name) {
+            // 切换选中状态
+            if (type === 'pm') {
+                selectedPeople.pm = selectedPeople.pm === name ? null : name;
+            } else if (type === 'client') {
+                selectedPeople.client = selectedPeople.client === name ? null : name;
+            } else if (type === 'support') {
+                if (selectedPeople.support.has(name)) {
+                    selectedPeople.support.delete(name);
+                } else {
+                    selectedPeople.support.add(name);
+                }
             }
-            updateCounts();
-            if (currentView === 'calendar') renderCalendar();
+
+            // 设置日历过滤人员（点击即过滤）
+            if (activeFilterPerson === name) {
+                activeFilterPerson = null; // 再次点击取消过滤
+            } else {
+                activeFilterPerson = name;
+            }
+
+            renderPeople();
+            renderCalendar();
         }
 
         function updateCounts() {
@@ -1038,6 +948,19 @@
             document.getElementById('supportCount').textContent = `已选: ${selectedPeople.support.size}人`;
         }
 
+        function updateFilterHint() {
+            const hint = document.getElementById('filterHint');
+            const filterName = document.getElementById('filterName');
+            
+            if (activeFilterPerson) {
+                hint.style.display = 'block';
+                filterName.textContent = activeFilterPerson;
+            } else {
+                hint.style.display = 'none';
+            }
+        }
+
+        // ==================== 日历渲染（带人员关联高亮）====================
         function renderCalendar() {
             const calendar = document.getElementById('calendar');
             const headers = Array.from(calendar.querySelectorAll('.weekday-header'));
@@ -1065,19 +988,34 @@
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dayProjects = getDayProjects(dateStr);
             
+            // 检查是否有休假
             const hasLeave = dayProjects.some(p => p.phase === 'leave');
             if (hasLeave) dayElement.classList.add('disabled');
 
+            // 检查是否与选中人员关联
+            let hasRelatedProject = false;
+            if (activeFilterPerson) {
+                hasRelatedProject = dayProjects.some(p => p.people.includes(activeFilterPerson));
+                if (hasRelatedProject) {
+                    dayElement.classList.add('has-related-project');
+                }
+            }
+
             let html = `<div class="day-number">${day}</div>`;
             
+            // 显示项目（关联项目高亮）
             dayProjects.forEach(project => {
                 const classes = getProjectItemClass(project);
+                const isRelated = activeFilterPerson && project.people.includes(activeFilterPerson);
+                const relatedClass = isRelated ? 'related-project' : '';
                 const title = `${project.name} - ${project.people.join(', ')}`;
-                html += `<div class="project-item ${classes}" title="${title}" onclick="event.stopPropagation(); editProject(${project.id})">
+                
+                html += `<div class="project-item ${classes} ${relatedClass}" title="${title}" onclick="event.stopPropagation(); editProject(${project.id})">
                     ${project.name}
                 </div>`;
             });
 
+            // 冲击标识
             const hasImpact = dayProjects.some(p => p.phase === 'impact') || 
                              (selectedPeople.support.size > 0 && dayProjects.some(p => 
                                 p.people.some(person => supportList.includes(person))));
@@ -1114,7 +1052,7 @@
 
         function changeMonth(delta) {
             currentDate.setMonth(currentDate.getMonth() + delta);
-            if (currentView === 'calendar') renderCalendar();
+            renderCalendar();
         }
 
         // ==================== 模态框功能 ====================
@@ -1138,9 +1076,6 @@
             if (dateStr) {
                 document.getElementById('startDate').value = dateStr;
                 document.getElementById('endDate').value = dateStr;
-            } else {
-                document.getElementById('startDate').value = '';
-                document.getElementById('endDate').value = '';
             }
         }
 
