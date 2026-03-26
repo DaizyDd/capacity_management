@@ -44,6 +44,19 @@
         }
         .role-pm { background: #dbeafe; color: #1e40af; }
         .role-client { background: #fce7f3; color: #9d174d; }
+        .role-support { background: #d1fae5; color: #065f46; }
+        .checkbox-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+        }
+        .checkbox-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 6px; border-radius: 6px; cursor: pointer;
+        }
+        .checkbox-item:hover { background: #f3f4f6; }
+        .checkbox-item.selected { background: #d1fae5; }
+        .support-summary {
+            font-size: 12px; color: #6b7280; margin-top: 4px;
+        }
     </style>
 </head>
 <body class="text-slate-800">
@@ -69,12 +82,16 @@
     <aside class="w-72 bg-white border-r border-slate-200 p-4 overflow-y-auto">
         <h3 class="font-bold text-sm text-slate-500 mb-4">人员列表</h3>
         <div class="mb-4">
-            <div class="text-xs text-slate-400 mb-2">项目经理（对内）</div>
+            <div class="text-xs text-slate-400 mb-2">项目经理（PM）</div>
             <div id="pmList" class="space-y-2"></div>
         </div>
         <div class="mb-4">
-            <div class="text-xs text-slate-400 mb-2">客户负责人（对外）</div>
+            <div class="text-xs text-slate-400 mb-2">客户负责人（Client）</div>
             <div id="clientList" class="space-y-2"></div>
+        </div>
+        <div class="mb-4">
+            <div class="text-xs text-slate-400 mb-2">项目支持（Support）</div>
+            <div id="supportList" class="space-y-2"></div>
         </div>
         
         <div class="mt-6 p-3 bg-slate-50 rounded-lg text-sm">
@@ -128,13 +145,21 @@
             
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">项目经理（对内）</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">项目经理（PM）<span class="text-red-500">*</span></label>
                     <select id="projPM" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"></select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1">客户负责人（对外）</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">客户负责人（Client）<span class="text-red-500">*</span></label>
                     <select id="projClient" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"></select>
                 </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                    项目支持（Support）<span class="text-xs text-slate-500 font-normal">- 可多选</span>
+                </label>
+                <div id="supportCheckboxes" class="checkbox-grid border border-slate-300 rounded-lg p-3"></div>
+                <div id="supportSummary" class="support-summary">已选择: 无</div>
             </div>
             
             <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
@@ -187,13 +212,24 @@
 </div>
 
 <script>
-const pmList = ['刘絮', 'Huanhuan', '潘潘', 'Kathy', '思璇', 'Miles'];
-const clientList = ['刘絮', 'huanhuan', 'Daizy'];
+const pmList = ['刘絮', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles'];
+const clientList = ['刘絮', 'Huan', 'Daizy'];
+const supportList = ['刘絮', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles', 'Daizy'];
+
 let projects = [];
 let currentDate = new Date(2026, 3, 1);
 let selectedPerson = pmList[0];
 let selectedRole = 'pm';
-const STORAGE_KEY = 'pm_data_v3';
+let selectedSupports = [];
+const STORAGE_KEY = 'pm_data_v6';
+
+function formatDate(d) {
+    if (typeof d === 'string') return d;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
 function init() {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -205,7 +241,6 @@ function init() {
 }
 
 function renderPersonLists() {
-    // PM List
     const pmDiv = document.getElementById('pmList');
     pmDiv.innerHTML = pmList.map(p => `
         <div onclick="selectPerson('${p}', 'pm')" class="p-3 rounded-lg cursor-pointer ${p === selectedPerson && selectedRole === 'pm' ? 'bg-indigo-100 border-indigo-500 border' : 'bg-slate-50 hover:bg-slate-100'}">
@@ -214,12 +249,19 @@ function renderPersonLists() {
         </div>
     `).join('');
     
-    // Client List
     const clientDiv = document.getElementById('clientList');
     clientDiv.innerHTML = clientList.map(p => `
         <div onclick="selectPerson('${p}', 'client')" class="p-3 rounded-lg cursor-pointer ${p === selectedPerson && selectedRole === 'client' ? 'bg-pink-100 border-pink-500 border' : 'bg-slate-50 hover:bg-slate-100'}">
             <div class="font-semibold">${p}</div>
             <div class="text-xs text-slate-500">负荷: ${calculateLoad(p, 'client')}%</div>
+        </div>
+    `).join('');
+    
+    const supportDiv = document.getElementById('supportList');
+    supportDiv.innerHTML = supportList.map(p => `
+        <div onclick="selectPerson('${p}', 'support')" class="p-3 rounded-lg cursor-pointer ${p === selectedPerson && selectedRole === 'support' ? 'bg-green-100 border-green-500 border' : 'bg-slate-50 hover:bg-slate-100'}">
+            <div class="font-semibold">${p}</div>
+            <div class="text-xs text-slate-500">负荷: ${calculateLoad(p, 'support')}%</div>
         </div>
     `).join('');
 }
@@ -243,8 +285,12 @@ function getDayLoad(date, person, role) {
     const dateStr = formatDate(date);
     let load = 0;
     projects.forEach(p => {
-        const personField = role === 'pm' ? 'pm' : 'client';
-        if (p[personField] !== person) return;
+        let match = false;
+        if (role === 'pm' && p.pm === person) match = true;
+        else if (role === 'client' && p.client === person) match = true;
+        else if (role === 'support' && p.supports && p.supports.includes(person)) match = true;
+        
+        if (!match) return;
         
         Object.entries(p.phases).forEach(([phaseName, phase]) => {
             if (dateStr >= phase.start && dateStr <= phase.end) {
@@ -253,10 +299,6 @@ function getDayLoad(date, person, role) {
         });
     });
     return load;
-}
-
-function formatDate(d) {
-    return d.toISOString().split('T')[0];
 }
 
 function selectPerson(p, role) {
@@ -325,8 +367,12 @@ function getDayProjects(date, person, role) {
     const dateStr = formatDate(date);
     const list = [];
     projects.forEach(p => {
-        const personField = role === 'pm' ? 'pm' : 'client';
-        if (p[personField] !== person) return;
+        let match = false;
+        if (role === 'pm' && p.pm === person) match = true;
+        else if (role === 'client' && p.client === person) match = true;
+        else if (role === 'support' && p.supports && p.supports.includes(person)) match = true;
+        
+        if (!match) return;
         
         Object.entries(p.phases).forEach(([phaseName, phase]) => {
             if (dateStr >= phase.start && dateStr <= phase.end) {
@@ -335,7 +381,8 @@ function getDayProjects(date, person, role) {
                     phase: phaseName, 
                     load: phase.load,
                     pm: p.pm,
-                    client: p.client
+                    client: p.client,
+                    supports: p.supports
                 });
             }
         });
@@ -364,7 +411,7 @@ function showDetail(date, list) {
                     <div>
                         <div class="font-medium">${p.name}</div>
                         <div class="text-xs text-slate-500">
-                            PM: ${p.pm} | 客户: ${p.client}
+                            PM: ${p.pm} | 客户: ${p.client}${p.supports && p.supports.length > 0 ? ' | 支持: ' + p.supports.join(', ') : ''}
                         </div>
                     </div>
                     <span class="font-bold ${p.load === 0 ? 'text-gray-400' : p.load >= 80 ? 'text-red-600' : ''}">${p.load}%</span>
@@ -375,8 +422,15 @@ function showDetail(date, list) {
 
 function renderProjectList() {
     const div = document.getElementById('projectList');
-    const personField = selectedRole === 'pm' ? 'pm' : 'client';
-    const personProjects = projects.filter(p => p[personField] === selectedPerson);
+    let personProjects = [];
+    
+    if (selectedRole === 'pm') {
+        personProjects = projects.filter(p => p.pm === selectedPerson);
+    } else if (selectedRole === 'client') {
+        personProjects = projects.filter(p => p.client === selectedPerson);
+    } else {
+        personProjects = projects.filter(p => p.supports && p.supports.includes(selectedPerson));
+    }
     
     div.innerHTML = personProjects.length === 0 ? '<p class="text-slate-400">暂无项目</p>' : 
         personProjects.map(p => `
@@ -385,22 +439,70 @@ function renderProjectList() {
                 <div class="text-xs text-slate-500 mt-1">
                     <span class="role-tag role-pm">${p.pm}</span>
                     <span class="role-tag role-client">${p.client}</span>
+                    ${p.supports && p.supports.length > 0 ? p.supports.map(s => `<span class="role-tag role-support">${s}</span>`).join('') : ''}
                 </div>
                 <button onclick="deleteProject(${p.id})" class="text-red-500 text-xs mt-2 hover:underline">删除</button>
             </div>
         `).join('');
 }
 
-// ========== 模态框功能 ==========
 function openAddModal() {
     document.getElementById('addModal').classList.add('active');
+    selectedSupports = [];
+    renderSupportCheckboxes();
+    updateSupportSummary();
+    
     const today = new Date();
-    document.getElementById('phase1Start').value = formatDate(today);
-    document.getElementById('phase1End').value = formatDate(new Date(today.getTime() + 14 * 86400000));
-    document.getElementById('phase2Start').value = formatDate(new Date(today.getTime() + 15 * 86400000));
-    document.getElementById('phase2End').value = formatDate(new Date(today.getTime() + 45 * 86400000));
-    document.getElementById('phase3Start').value = formatDate(new Date(today.getTime() + 46 * 86400000));
-    document.getElementById('phase3End').value = formatDate(new Date(today.getTime() + 60 * 86400000));
+    const todayStr = formatDate(today);
+    
+    const p1End = new Date(today);
+    p1End.setDate(today.getDate() + 14);
+    const p2Start = new Date(p1End);
+    p2Start.setDate(p1End.getDate() + 1);
+    const p2End = new Date(p2Start);
+    p2End.setDate(p2Start.getDate() + 30);
+    const p3Start = new Date(p2End);
+    p3Start.setDate(p2End.getDate() + 1);
+    const p3End = new Date(p3Start);
+    p3End.setDate(p3Start.getDate() + 14);
+    
+    document.getElementById('phase1Start').value = todayStr;
+    document.getElementById('phase1End').value = formatDate(p1End);
+    document.getElementById('phase2Start').value = formatDate(p2Start);
+    document.getElementById('phase2End').value = formatDate(p2End);
+    document.getElementById('phase3Start').value = formatDate(p3Start);
+    document.getElementById('phase3End').value = formatDate(p3End);
+}
+
+function renderSupportCheckboxes() {
+    const container = document.getElementById('supportCheckboxes');
+    container.innerHTML = supportList.map(person => `
+        <div class="checkbox-item ${selectedSupports.includes(person) ? 'selected' : ''}" onclick="toggleSupport('${person}')">
+            <input type="checkbox" ${selectedSupports.includes(person) ? 'checked' : ''} onclick="event.stopPropagation()">
+            <span class="text-sm">${person}</span>
+        </div>
+    `).join('');
+}
+
+function toggleSupport(person) {
+    if (selectedSupports.includes(person)) {
+        selectedSupports = selectedSupports.filter(p => p !== person);
+    } else {
+        selectedSupports.push(person);
+    }
+    renderSupportCheckboxes();
+    updateSupportSummary();
+}
+
+function updateSupportSummary() {
+    const summary = document.getElementById('supportSummary');
+    if (selectedSupports.length === 0) {
+        summary.textContent = '已选择: 无';
+        summary.className = 'support-summary';
+    } else {
+        summary.textContent = `已选择: ${selectedSupports.join(', ')}`;
+        summary.className = 'support-summary text-green-600 font-medium';
+    }
 }
 
 function closeAddModal() {
@@ -420,6 +522,7 @@ function updateModalOptions() {
 
 function clearForm() {
     document.getElementById('projName').value = '';
+    selectedSupports = [];
     document.getElementById('leaveStart').value = '';
     document.getElementById('leaveEnd').value = '';
 }
@@ -439,17 +542,16 @@ function saveProject() {
         name: name,
         pm: pm,
         client: client,
+        supports: selectedSupports.length > 0 ? selectedSupports : null,
         phases: {}
     };
     
-    // Phase 1: Proposal (50%)
     const p1Start = document.getElementById('phase1Start').value;
     const p1End = document.getElementById('phase1End').value;
     if (p1Start && p1End) {
         newProject.phases.proposal = { start: p1Start, end: p1End, load: 50 };
     }
     
-    // Phase 2: Preparation (30-50%)
     const p2Start = document.getElementById('phase2Start').value;
     const p2End = document.getElementById('phase2End').value;
     const p2Load = parseInt(document.getElementById('phase2Load').value);
@@ -457,14 +559,12 @@ function saveProject() {
         newProject.phases.preparation = { start: p2Start, end: p2End, load: p2Load };
     }
     
-    // Phase 3: Sprint (80%)
     const p3Start = document.getElementById('phase3Start').value;
     const p3End = document.getElementById('phase3End').value;
     if (p3Start && p3End) {
         newProject.phases.sprint = { start: p3Start, end: p3End, load: 80 };
     }
     
-    // Leave (0%)
     const leaveStart = document.getElementById('leaveStart').value;
     const leaveEnd = document.getElementById('leaveEnd').value;
     if (leaveStart && leaveEnd) {
@@ -477,7 +577,7 @@ function saveProject() {
     renderPersonLists();
     renderProjectList();
     renderCalendar();
-    showToast('项目添加成功！');
+    showToast(`项目添加成功！支持人员: ${selectedSupports.length}人`);
 }
 
 function deleteProject(id) {
@@ -498,7 +598,6 @@ function showToast(msg) {
     setTimeout(() => div.remove(), 3000);
 }
 
-// ========== 导入导出 ==========
 function exportData() {
     const data = { projects, exportTime: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -538,7 +637,6 @@ function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ projects }));
 }
 
-// 启动
 init();
 </script>
 
