@@ -32,6 +32,9 @@
         .role-pm { background: #dbeafe; color: #1e40af; }
         .role-client { background: #fce7f3; color: #9d174d; }
         .role-support { background: #d1fae5; color: #065f46; }
+        .project-item { position: relative; }
+        .delete-btn { position: absolute; right: 4px; top: 4px; color: #ef4444; font-size: 12px; cursor: pointer; padding: 2px 6px; }
+        .delete-btn:hover { background: #fee2e2; border-radius: 4px; }
     </style>
 </head>
 <body class="text-slate-800">
@@ -42,6 +45,11 @@
         <div class="flex gap-2">
             <button onclick="openModal()" class="px-3 py-1.5 bg-indigo-600 text-white rounded text-sm">+ 项目</button>
             <button onclick="exportData()" class="px-3 py-1.5 bg-green-500 text-white rounded text-sm">导出</button>
+            <label class="px-3 py-1.5 bg-blue-500 text-white rounded text-sm cursor-pointer">
+                导入
+                <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(this)">
+            </label>
+            <button onclick="clearAllData()" class="px-3 py-1.5 bg-red-500 text-white rounded text-sm">清空</button>
         </div>
     </div>
 </nav>
@@ -67,6 +75,7 @@
             <div class="flex items-center gap-1"><span class="w-2 h-2 bg-blue-500 rounded-full"></span>准备 30-50%</div>
             <div class="flex items-center gap-1"><span class="w-2 h-2 bg-red-500 rounded-full"></span>冲击 80%</div>
         </div>
+        <div class="mt-2 text-xs text-slate-400" id="saveStatus">数据已自动保存</div>
     </aside>
 
     <!-- Main -->
@@ -154,6 +163,7 @@ let currentDate = new Date(2026, 3, 1);
 let selectedPerson = pmList[0];
 let selectedRole = 'pm';
 let selectedSupports = [];
+const STORAGE_KEY = 'pm_data_v7';
 
 function formatDate(d) {
     if (typeof d === 'string') return d;
@@ -163,30 +173,107 @@ function formatDate(d) {
     return `${year}-${month}-${day}`;
 }
 
+// ========== 1. 数据持久化：从本地存储加载 ==========
 function init() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            projects = data.projects || [];
+            if (projects.length > 0) {
+                showStatus('已恢复 ' + projects.length + ' 个项目');
+            }
+        } catch (e) {
+            console.error('加载失败', e);
+        }
+    }
     renderPersonLists();
     renderCalendar();
     updateModal();
 }
 
+// ========== 1. 数据持久化：保存到本地存储 ==========
+function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        projects: projects,
+        savedAt: new Date().toISOString()
+    }));
+    showStatus('已自动保存');
+}
+
+function showStatus(msg) {
+    const el = document.getElementById('saveStatus');
+    el.textContent = msg;
+    el.style.color = '#10b981';
+    setTimeout(() => {
+        el.style.color = '#9ca3af';
+        el.textContent = '数据已自动保存';
+    }, 2000);
+}
+
 function renderPersonLists() {
     document.getElementById('pmList').innerHTML = pmList.map(p => `
-        <div onclick="selectPerson('${p}', 'pm')" class="p-2 rounded cursor-pointer text-sm ${p === selectedPerson && selectedRole === 'pm' ? 'bg-indigo-100 border border-indigo-500' : 'bg-slate-50'}">
+        <div onclick="selectPerson('${p}', 'pm')" class="project-item p-2 rounded cursor-pointer text-sm ${p === selectedPerson && selectedRole === 'pm' ? 'bg-indigo-100 border border-indigo-500' : 'bg-slate-50'}">
             ${p} <span class="text-xs text-slate-400">${getLoad(p, 'pm')}%</span>
+            ${renderPersonProjects(p, 'pm')}
         </div>
     `).join('');
     
     document.getElementById('clientList').innerHTML = clientList.map(p => `
-        <div onclick="selectPerson('${p}', 'client')" class="p-2 rounded cursor-pointer text-sm ${p === selectedPerson && selectedRole === 'client' ? 'bg-pink-100 border border-pink-500' : 'bg-slate-50'}">
+        <div onclick="selectPerson('${p}', 'client')" class="project-item p-2 rounded cursor-pointer text-sm ${p === selectedPerson && selectedRole === 'client' ? 'bg-pink-100 border border-pink-500' : 'bg-slate-50'}">
             ${p} <span class="text-xs text-slate-400">${getLoad(p, 'client')}%</span>
+            ${renderPersonProjects(p, 'client')}
         </div>
     `).join('');
     
     document.getElementById('supportList').innerHTML = supportList.map(p => `
-        <div onclick="selectPerson('${p}', 'support')" class="p-2 rounded cursor-pointer text-sm ${p === selectedPerson && selectedRole === 'support' ? 'bg-green-100 border border-green-500' : 'bg-slate-50'}">
+        <div onclick="selectPerson('${p}', 'support')" class="project-item p-2 rounded cursor-pointer text-sm ${p === selectedPerson && selectedRole === 'support' ? 'bg-green-100 border border-green-500' : 'bg-slate-50'}">
             ${p} <span class="text-xs text-slate-400">${getLoad(p, 'support')}%</span>
+            ${renderPersonProjects(p, 'support')}
         </div>
     `).join('');
+}
+
+// ========== 3. 项目删除：显示项目列表和删除按钮 ==========
+function renderPersonProjects(person, role) {
+    let personProjects = [];
+    if (role === 'pm') {
+        personProjects = projects.filter(p => p.pm === person);
+    } else if (role === 'client') {
+        personProjects = projects.filter(p => p.client === person);
+    } else {
+        personProjects = projects.filter(p => p.supports && p.supports.includes(person));
+    }
+    
+    if (personProjects.length === 0) return '';
+    
+    return '<div class="mt-1 space-y-1">' + personProjects.map(p => `
+        <div class="bg-white p-1.5 rounded text-xs border flex justify-between items-center">
+            <span class="truncate flex-1">${p.name}</span>
+            <span class="delete-btn" onclick="event.stopPropagation(); deleteProject(${p.id})">×</span>
+        </div>
+    `).join('') + '</div>';
+}
+
+// ========== 3. 项目删除：删除功能 ==========
+function deleteProject(id) {
+    if (!confirm('确定删除这个项目吗？')) return;
+    projects = projects.filter(p => p.id !== id);
+    saveToStorage();
+    renderPersonLists();
+    renderCalendar();
+    showStatus('项目已删除');
+}
+
+// ========== 3. 清空所有数据 ==========
+function clearAllData() {
+    if (!confirm('确定清空所有项目吗？此操作不可恢复！')) return;
+    if (!confirm('再次确认：将删除所有 ' + projects.length + ' 个项目？')) return;
+    projects = [];
+    localStorage.removeItem(STORAGE_KEY);
+    renderPersonLists();
+    renderCalendar();
+    showStatus('所有数据已清空');
 }
 
 function getLoad(person, role) {
@@ -315,6 +402,7 @@ function openModal() {
 
 function closeModal() {
     document.getElementById('modal').classList.remove('active');
+    document.getElementById('projName').value = '';
 }
 
 function updateModal() {
@@ -360,21 +448,58 @@ function saveProject() {
     };
     
     projects.push(newProject);
+    saveToStorage(); // 自动保存
     closeModal();
     renderPersonLists();
     renderCalendar();
-    alert('项目添加成功！');
+    showStatus('项目添加成功！');
+}
+
+// ========== 2. 导入功能 ==========
+function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            const projectCount = data.projects?.length || 0;
+            
+            if (projectCount === 0) {
+                alert('文件中没有项目数据');
+                return;
+            }
+            
+            if (confirm(`确定导入 ${projectCount} 个项目吗？将覆盖现有数据。`)) {
+                projects = data.projects;
+                saveToStorage();
+                renderPersonLists();
+                renderCalendar();
+                showStatus(`成功导入 ${projectCount} 个项目`);
+            }
+        } catch (err) {
+            alert('文件格式错误：' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
 }
 
 function exportData() {
-    const data = { projects, exportTime: new Date().toISOString() };
+    const data = { 
+        projects: projects, 
+        exportTime: new Date().toISOString(),
+        version: '1.0'
+    };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `备份_${formatDate(new Date())}.json`;
+    a.download = `项目备份_${formatDate(new Date())}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    showStatus('导出成功');
 }
 
 init();
