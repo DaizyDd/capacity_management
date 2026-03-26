@@ -89,6 +89,174 @@
             left: -9999px;
         }
 
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        /* ==================== 工作量视图样式 ==================== */
+        .workload-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .workload-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .workload-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .workload-legend {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .workload-grid {
+            display: grid;
+            /* 第一列人员名称固定宽度，后面每列日期40px */
+            grid-template-columns: 120px repeat(31, 35px);
+            gap: 2px;
+            min-width: max-content;
+        }
+
+        .workload-cell {
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75em;
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .workload-cell:hover {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        /* 人员名称列 - 固定 */
+        .workload-person {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9em;
+            position: sticky;
+            left: 0;
+            z-index: 20;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* 日期表头 */
+        .workload-date-header {
+            background: #f5f5f5;
+            color: #666;
+            font-weight: bold;
+            font-size: 0.7em;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            padding: 5px 0;
+        }
+
+        .workload-date-header.weekend {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        /* 工作量状态颜色 */
+        .workload-empty {
+            background: #f0f0f0;
+            cursor: pointer;
+        }
+
+        .workload-proposal {
+            background: #e1bee7;
+            color: #6a1b9a;
+            font-weight: bold;
+        }
+
+        .workload-prep-30 {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .workload-prep-40 {
+            background: #81c784;
+            color: #1b5e20;
+        }
+
+        .workload-prep-50 {
+            background: #4caf50;
+            color: white;
+        }
+
+        .workload-impact {
+            background: #ffcdd2;
+            color: #c62828;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        .workload-leave {
+            background: #ffebee;
+            color: #d32f2f;
+            text-decoration: line-through;
+        }
+
+        .workload-overload {
+            background: #ff5252;
+            color: white;
+            font-weight: bold;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* 工作量数值显示 */
+        .workload-value {
+            font-size: 0.65em;
+        }
+
+        /* ==================== 日历视图样式 ==================== */
         .main-layout {
             display: grid;
             grid-template-columns: 300px 1fr;
@@ -181,94 +349,6 @@
             background: #f57c00;
         }
 
-        .workload-view {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            overflow-x: auto;
-        }
-
-        .workload-grid {
-            display: grid;
-            grid-template-columns: 100px repeat(31, 40px);
-            gap: 2px;
-            min-width: max-content;
-        }
-
-        .workload-header {
-            background: #f5f5f5;
-            padding: 8px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.8em;
-            border-radius: 4px;
-        }
-
-        .workload-cell {
-            aspect-ratio: 1;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .workload-cell:hover {
-            transform: scale(1.1);
-            z-index: 10;
-        }
-
-        .workload-cell.empty {
-            background: #f0f0f0;
-        }
-
-        .workload-cell.proposal {
-            background: #e1bee7;
-            color: #6a1b9a;
-        }
-
-        .workload-cell.prep-light {
-            background: #c8e6c9;
-            color: #2e7d32;
-        }
-
-        .workload-cell.prep-medium {
-            background: #81c784;
-            color: #1b5e20;
-        }
-
-        .workload-cell.prep-heavy {
-            background: #4caf50;
-            color: white;
-        }
-
-        .workload-cell.impact {
-            background: #ffcdd2;
-            color: #c62828;
-        }
-
-        .workload-cell.leave {
-            background: #ffebee;
-            color: #d32f2f;
-            text-decoration: line-through;
-        }
-
-        .workload-name {
-            background: #667eea;
-            color: white;
-            padding: 8px;
-            font-weight: bold;
-            font-size: 0.85em;
-            display: flex;
-            align-items: center;
-            border-radius: 4px;
-        }
-
         .calendar-section {
             background: white;
             border-radius: 15px;
@@ -286,11 +366,6 @@
         .month-nav {
             display: flex;
             gap: 10px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
         }
 
         .calendar-grid {
@@ -345,7 +420,6 @@
             margin-top: 4px;
             cursor: pointer;
             transition: all 0.2s;
-            position: relative;
         }
 
         .project-item:hover {
@@ -385,11 +459,6 @@
             text-decoration: line-through;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
         .impact-marker {
             position: absolute;
             top: 5px;
@@ -404,26 +473,6 @@
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
-        }
-
-        .person-avatars {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 8px;
-            font-size: 0.75em;
-        }
-
-        .mini-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.7em;
-            font-weight: bold;
         }
 
         .phase-legend {
@@ -527,12 +576,6 @@
             color: white;
         }
 
-        .btn-secondary {
-            background: #f5f5f5;
-            color: #333;
-            border: 2px solid #e0e0e0;
-        }
-
         .toast {
             position: fixed;
             bottom: 30px;
@@ -559,13 +602,6 @@
             font-size: 0.8em;
             color: #666;
             margin-left: auto;
-        }
-
-        .view-toggle {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            justify-content: center;
         }
     </style>
 </head>
@@ -594,12 +630,30 @@
         </div>
 
         <!-- 工作量视图 -->
-        <div id="workloadView" class="workload-view" style="display: none;">
-            <h3 style="margin-bottom: 15px;">📈 单人工作量看板（点击日期查看详情）</h3>
-            <div id="workloadGrid"></div>
+        <div id="workloadView" class="workload-container" style="display: none;">
+            <div class="workload-header">
+                <div class="workload-title">📈 单人工作量看板 - <span id="workloadMonth">2026年4月</span></div>
+                <div class="month-nav">
+                    <button class="btn btn-primary" onclick="changeWorkloadMonth(-1)">◀ 上月</button>
+                    <button class="btn btn-primary" onclick="changeWorkloadMonth(1)">下月 ▶</button>
+                </div>
+            </div>
+            
+            <div class="workload-legend">
+                <div class="legend-item"><div class="legend-color" style="background: #e1bee7;"></div>方案40%</div>
+                <div class="legend-item"><div class="legend-color" style="background: #81c784;"></div>准备30-50%</div>
+                <div class="legend-item"><div class="legend-color" style="background: #ffcdd2;"></div>冲击80%</div>
+                <div class="legend-item"><div class="legend-color" style="background: #ffebee; border: 2px solid #ffcdd2;"></div>休假</div>
+                <div class="legend-item"><div class="legend-color" style="background: #ff5252;"></div>超负荷</div>
+            </div>
+
+            <div style="overflow-x: auto; margin-top: 15px;">
+                <div id="workloadGrid" class="workload-grid"></div>
+            </div>
         </div>
 
-        <div class="main-layout" id="mainLayout">
+        <!-- 日历视图 -->
+        <div class="main-layout" id="calendarLayout">
             <div class="sidebar">
                 <div class="module">
                     <div class="module-title">
@@ -677,7 +731,7 @@
             <h2 style="margin-bottom: 20px;" id="modalTitle">添加新项目</h2>
             
             <input type="hidden" id="projectId">
-            
+
             <div class="form-group">
                 <label>项目名称</label>
                 <input type="text" id="projectName" placeholder="输入项目名称">
@@ -744,6 +798,7 @@
         
         // ==================== 全局状态 ====================
         let currentDate = new Date(2026, 3, 1);
+        let workloadDate = new Date(2026, 3, 1);
         let selectedPeople = {
             pm: null,
             client: null,
@@ -756,92 +811,184 @@
         function init() {
             renderPeople();
             renderCalendar();
-            renderWorkload();
         }
 
         // ==================== 视图切换 ====================
         function showView(view) {
             currentView = view;
-            const calendarBtn = document.getElementById('calendarBtn');
-            const workloadBtn = document.getElementById('workloadBtn');
-            const mainLayout = document.getElementById('mainLayout');
-            const workloadView = document.getElementById('workloadView');
-
+            document.getElementById('calendarBtn').className = view === 'calendar' ? 'btn btn-primary' : 'btn btn-secondary';
+            document.getElementById('workloadBtn').className = view === 'workload' ? 'btn btn-primary' : 'btn btn-secondary';
+            
             if (view === 'calendar') {
-                calendarBtn.className = 'btn btn-primary';
-                workloadBtn.className = 'btn btn-secondary';
-                mainLayout.style.display = 'grid';
-                workloadView.style.display = 'none';
+                document.getElementById('calendarLayout').style.display = 'grid';
+                document.getElementById('workloadView').style.display = 'none';
                 renderCalendar();
             } else {
-                calendarBtn.className = 'btn btn-secondary';
-                workloadBtn.className = 'btn btn-primary';
-                mainLayout.style.display = 'none';
-                workloadView.style.display = 'block';
+                document.getElementById('calendarLayout').style.display = 'none';
+                document.getElementById('workloadView').style.display = 'block';
                 renderWorkload();
             }
         }
 
-        // ==================== 工作量视图渲染 ====================
+        // ==================== 工作量视图 ====================
+        function changeWorkloadMonth(delta) {
+            workloadDate.setMonth(workloadDate.getMonth() + delta);
+            renderWorkload();
+        }
+
         function renderWorkload() {
-            const grid = document.getElementById('workloadGrid');
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
+            const year = workloadDate.getFullYear();
+            const month = workloadDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            // 表头
-            let html = '<div class="workload-header">人员</div>';
+            document.getElementById('workloadMonth').textContent = `${year}年${month + 1}月`;
+            
+            const grid = document.getElementById('workloadGrid');
+            
+            // 构建表头：人员名称 + 日期
+            let html = '';
+            
+            // 第一行：日期表头
+            html += '<div class="workload-cell workload-person">人员</div>';
             for (let d = 1; d <= daysInMonth; d++) {
-                html += `<div class="workload-header">${d}</div>`;
+                const date = new Date(year, month, d);
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                const dayClass = isWeekend ? 'workload-date-header weekend' : 'workload-date-header';
+                html += `<div class="workload-cell ${dayClass}">${d}</div>`;
             }
             
-            // 所有人员
+            // 所有人员（合并去重）
             const allPeople = [...new Set([...pmList, ...clientList, ...supportList])];
             
             allPeople.forEach(person => {
-                html += `<div class="workload-name">${person}</div>`;
+                // 人员名称列
+                html += `<div class="workload-cell workload-person">${person}</div>`;
                 
+                // 每天的工作量
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    const dayProjects = getDayProjects(dateStr);
-                    const personProjects = dayProjects.filter(p => p.people.includes(person));
+                    const cellData = getWorkloadCellData(person, dateStr);
                     
-                    if (personProjects.length === 0) {
-                        html += `<div class="workload-cell empty" onclick="openModal('${dateStr}', '${person}')"></div>`;
-                    } else {
-                        const p = personProjects[0]; // 取第一个项目显示
-                        const classes = getWorkloadCellClass(p);
-                        const title = `${p.name} (${getPhaseText(p)})`;
-                        html += `<div class="workload-cell ${classes}" title="${title}" onclick="editProject(${p.id})"></div>`;
+                    const cellClass = cellData.class;
+                    const title = cellData.title;
+                    const onclick = cellData.canEdit ? `onclick="openWorkloadModal('${dateStr}', '${person}')"` : '';
+                    
+                    html += `<div class="workload-cell ${cellClass}" title="${title}" ${onclick}>`;
+                    if (cellData.value) {
+                        html += `<span class="workload-value">${cellData.value}</span>`;
                     }
+                    html += `</div>`;
                 }
             });
             
             grid.innerHTML = html;
         }
 
-        function getWorkloadCellClass(project) {
-            if (project.phase === 'leave') return 'leave';
-            if (project.phase === 'proposal') return 'proposal';
-            if (project.phase === 'prep') {
-                const intensity = project.equipment || 40;
-                if (intensity <= 30) return 'prep-light';
-                if (intensity >= 50) return 'prep-heavy';
-                return 'prep-medium';
+        function getWorkloadCellData(person, dateStr) {
+            const dayProjects = projects.filter(p => {
+                const start = new Date(p.startDate);
+                const end = new Date(p.endDate);
+                const current = new Date(dateStr);
+                return current >= start && current <= end && p.people.includes(person);
+            });
+
+            // 计算总工作量
+            let totalLoad = 0;
+            let titles = [];
+            
+            dayProjects.forEach(p => {
+                let load = 0;
+                let label = '';
+                
+                switch(p.phase) {
+                    case 'proposal':
+                        load = 40;
+                        label = '方案';
+                        break;
+                    case 'prep':
+                        load = parseInt(p.equipment) || 40;
+                        label = `准备${load}%`;
+                        break;
+                    case 'impact':
+                        load = 80;
+                        label = '冲击';
+                        break;
+                    case 'leave':
+                        load = 0;
+                        label = '休假';
+                        break;
+                }
+                
+                totalLoad += load;
+                titles.push(`${p.name}(${label})`);
+            });
+
+            // 判断状态
+            if (dayProjects.some(p => p.phase === 'leave')) {
+                return {
+                    class: 'workload-leave',
+                    title: titles.join('\n'),
+                    value: '休',
+                    canEdit: false
+                };
             }
-            if (project.phase === 'impact') return 'impact';
-            return '';
+
+            if (totalLoad === 0) {
+                return {
+                    class: 'workload-empty',
+                    title: '点击添加项目',
+                    value: '',
+                    canEdit: true
+                };
+            }
+
+            if (totalLoad > 100) {
+                return {
+                    class: 'workload-overload',
+                    title: `超负荷: ${totalLoad}%\n${titles.join('\n')}`,
+                    value: totalLoad,
+                    canEdit: true
+                };
+            }
+
+            // 根据主要项目类型决定颜色
+            let mainClass = 'workload-empty';
+            const mainProject = dayProjects[0];
+            
+            if (mainProject) {
+                switch(mainProject.phase) {
+                    case 'proposal': mainClass = 'workload-proposal'; break;
+                    case 'prep':
+                        const eq = parseInt(mainProject.equipment) || 40;
+                        if (eq <= 30) mainClass = 'workload-prep-30';
+                        else if (eq >= 50) mainClass = 'workload-prep-50';
+                        else mainClass = 'workload-prep-40';
+                        break;
+                    case 'impact': mainClass = 'workload-impact'; break;
+                }
+            }
+
+            return {
+                class: mainClass,
+                title: `${totalLoad}%\n${titles.join('\n')}`,
+                value: totalLoad,
+                canEdit: true
+            };
         }
 
-        function getPhaseText(project) {
-            if (project.phase === 'leave') return '休假';
-            if (project.phase === 'proposal') return '方案40%';
-            if (project.phase === 'prep') return `准备${project.equipment || 40}%`;
-            if (project.phase === 'impact') return '冲击80%';
-            return '';
+        function openWorkloadModal(dateStr, person) {
+            // 检查是否是休假日
+            const dayProjects = getDayProjects(dateStr);
+            if (dayProjects.some(p => p.phase === 'leave')) {
+                showToast('该日期为休假日', 'error');
+                return;
+            }
+            
+            // 预选中该人员
+            openModal(dateStr, person);
         }
 
-        // ==================== 人员渲染 ====================
+        // ==================== 日历视图 ====================
         function renderPeople() {
             const pmContainer = document.getElementById('pmList');
             pmContainer.innerHTML = pmList.map(pm => 
@@ -871,7 +1018,6 @@
             selectedPeople[type] = selectedPeople[type] === name ? null : name;
             renderPeople();
             if (currentView === 'calendar') renderCalendar();
-            else renderWorkload();
         }
 
         function toggleMultiple(type, name, element) {
@@ -884,7 +1030,6 @@
             }
             updateCounts();
             if (currentView === 'calendar') renderCalendar();
-            else renderWorkload();
         }
 
         function updateCounts() {
@@ -893,7 +1038,6 @@
             document.getElementById('supportCount').textContent = `已选: ${selectedPeople.support.size}人`;
         }
 
-        // ==================== 日历渲染 ====================
         function renderCalendar() {
             const calendar = document.getElementById('calendar');
             const headers = Array.from(calendar.querySelectorAll('.weekday-header'));
@@ -921,13 +1065,11 @@
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dayProjects = getDayProjects(dateStr);
             
-            // 检查是否有休假项目
             const hasLeave = dayProjects.some(p => p.phase === 'leave');
             if (hasLeave) dayElement.classList.add('disabled');
 
             let html = `<div class="day-number">${day}</div>`;
             
-            // 显示项目列表（可点击编辑）
             dayProjects.forEach(project => {
                 const classes = getProjectItemClass(project);
                 const title = `${project.name} - ${project.people.join(', ')}`;
@@ -936,21 +1078,14 @@
                 </div>`;
             });
 
-            // 冲击标识
             const hasImpact = dayProjects.some(p => p.phase === 'impact') || 
                              (selectedPeople.support.size > 0 && dayProjects.some(p => 
                                 p.people.some(person => supportList.includes(person))));
             
-            if (hasImpact && !hasLeave) {
-                html += `<div class="impact-marker"></div>`;
-            }
+            if (hasImpact && !hasLeave) html += `<div class="impact-marker"></div>`;
 
             dayElement.innerHTML = html;
-            
-            // 点击空白处添加新项目
-            if (!hasLeave) {
-                dayElement.onclick = () => openModal(dateStr);
-            }
+            if (!hasLeave) dayElement.onclick = () => openModal(dateStr);
             
             return dayElement;
         }
@@ -980,12 +1115,10 @@
         function changeMonth(delta) {
             currentDate.setMonth(currentDate.getMonth() + delta);
             if (currentView === 'calendar') renderCalendar();
-            else renderWorkload();
         }
 
         // ==================== 模态框功能 ====================
         function openModal(dateStr = null, preselectPerson = null) {
-            // 检查是否是休假日
             if (dateStr) {
                 const dayProjects = getDayProjects(dateStr);
                 if (dayProjects.some(p => p.phase === 'leave')) {
@@ -1078,7 +1211,6 @@
                 return;
             }
 
-            // 检查休假日冲突（休假项目除外）
             if (phase !== 'leave') {
                 const start = new Date(startDate);
                 const end = new Date(endDate);
@@ -1093,9 +1225,9 @@
             }
 
             const checkboxes = document.querySelectorAll('#personCheckboxes input:checked');
-            const selectedPeople = Array.from(checkboxes).map(cb => cb.value);
+            const selectedPeopleList = Array.from(checkboxes).map(cb => cb.value);
 
-            if (selectedPeople.length === 0) {
+            if (selectedPeopleList.length === 0) {
                 showToast('请至少选择一名人员', 'error');
                 return;
             }
@@ -1106,17 +1238,15 @@
                 phase,
                 startDate,
                 endDate,
-                people: selectedPeople,
+                people: selectedPeopleList,
                 equipment: phase === 'prep' ? document.getElementById('equipmentCount').value : null
             };
 
             if (id) {
-                // 更新
                 const index = projects.findIndex(p => p.id === parseInt(id));
                 if (index !== -1) projects[index] = projectData;
                 showToast('项目更新成功！', 'success');
             } else {
-                // 新增
                 projects.push(projectData);
                 showToast('项目添加成功！', 'success');
             }
