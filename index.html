@@ -1,14 +1,1423 @@
-{
-  "version": "1.0",
-  "exportTime": "2026-03-26T14:30:00.000Z",
-  "data": {
-    "projects": [...],
-    "leaveRecords": [...],
-    "selectedPeople": {
-      "pm": ["张经理"],
-      "client": ["陈总"],
-      "support": ["技术支持A"],
-      "leave": ["年假"]
-    }
-  }
-}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>项目周期管理系统 - 实时同步版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sync-status {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .sync-status.online {
+            color: #4caf50;
+        }
+
+        .sync-status.offline {
+            color: #f44336;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 30px;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .module {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .module:hover {
+            transform: translateY(-5px);
+        }
+
+        .module-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .role-group {
+            margin-bottom: 15px;
+        }
+
+        .role-label {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .person-tag {
+            display: inline-block;
+            padding: 6px 12px;
+            margin: 4px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            border: 2px solid transparent;
+            user-select: none;
+        }
+
+        .person-tag:hover {
+            transform: scale(1.05);
+        }
+
+        .person-tag.selected {
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* 项目经理 - 蓝色系 */
+        .pm-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #1976d2;
+        }
+
+        .pm-tag.selected {
+            background: #1976d2;
+        }
+
+        /* 客户负责人 - 绿色系 */
+        .client-tag {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-color: #388e3c;
+        }
+
+        .client-tag.selected {
+            background: #388e3c;
+        }
+
+        /* 项目支持 - 橙色系（可选多选） */
+        .support-tag {
+            background: #fff3e0;
+            color: #f57c00;
+            border-color: #f57c00;
+        }
+
+        .support-tag.selected {
+            background: #f57c00;
+        }
+
+        .support-tag.optional::after {
+            content: ' (可选)';
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+
+        /* 休假 - 红色系特殊模块 */
+        .leave-tag {
+            background: #ffebee;
+            color: #d32f2f;
+            border-color: #d32f2f;
+        }
+
+        .leave-tag.selected {
+            background: #d32f2f;
+        }
+
+        .calendar-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .month-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .weekday-header {
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            min-height: 100px;
+        }
+
+        .calendar-day:hover:not(.disabled) {
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .calendar-day.disabled {
+            background: #ffebee;
+            border-color: #ffcdd2;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .calendar-day.disabled::after {
+            content: '🌴 休假中';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .day-number {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .calendar-day.disabled .day-number {
+            color: #d32f2f;
+        }
+
+        .phase-indicator {
+            font-size: 0.75em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        /* 方案阶段 40% - 紫色 */
+        .phase-proposal {
+            background: #e1bee7;
+            color: #6a1b9a;
+        }
+
+        /* 准备阶段 - 根据设备数量动态调整颜色深浅 */
+        .phase-prep-light {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .phase-prep-medium {
+            background: #81c784;
+            color: #1b5e20;
+        }
+
+        .phase-prep-heavy {
+            background: #4caf50;
+            color: white;
+        }
+
+        /* 冲击阶段 80% - 深红色 */
+        .phase-impact {
+            background: #ffcdd2;
+            color: #c62828;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .person-avatars {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+            font-size: 0.75em;
+        }
+
+        .mini-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .stats-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .phase-legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            background: #f5f5f5;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            background: #e0e0e0;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .impact-marker {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 12px;
+            height: 12px;
+            background: #ff5252;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .selected-count {
+            font-size: 0.8em;
+            color: #666;
+            margin-left: 5px;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success {
+            background: #4caf50;
+        }
+
+        .toast.error {
+            background: #f44336;
+        }
+
+        .config-panel {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .config-panel h3 {
+            margin-bottom: 10px;
+            color: #1976d2;
+        }
+
+        .config-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #bbdefb;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .sync-hint {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 项目周期管理系统</h1>
+        <div class="sync-status" id="syncStatus">⚪ 未连接数据源</div>
+        
+        <!-- GitHub 同步配置面板 -->
+        <div class="config-panel" id="configPanel">
+            <h3>🔧 GitHub 同步配置</h3>
+            <div class="sync-hint">
+                💡 <strong>同步原理：</strong>页面从 GitHub Raw 地址加载 JSON 数据，你只需修改仓库中的 data.json 文件并 Push，所有人刷新页面即可看到最新内容。
+            </div>
+            <label>GitHub 用户名：</label>
+            <input type="text" id="githubUser" class="config-input" placeholder="如：daizydd" value="">
+            <label>仓库名：</label>
+            <input type="text" id="githubRepo" class="config-input" placeholder="如：capacity-management-data" value="">
+            <label>分支名（默认 main）：</label>
+            <input type="text" id="githubBranch" class="config-input" placeholder="main" value="main">
+            <label>文件路径（默认 data.json）：</label>
+            <input type="text" id="githubPath" class="config-input" placeholder="data.json" value="data.json">
+            <div style="margin-top: 10px; display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="connectToGitHub()">
+                    🔄 连接并同步
+                </button>
+                <button class="btn btn-secondary" onclick="saveConfig()">
+                    💾 保存配置
+                </button>
+                <button class="btn btn-warning" onclick="exportToGitHubFormat()">
+                    📤 生成 GitHub 格式文件
+                </button>
+            </div>
+            <div id="syncUrl" style="margin-top: 10px; font-size: 0.85em; color: #666; word-break: break-all;"></div>
+        </div>
+
+        <!-- 工具栏 -->
+        <div class="toolbar">
+            <div class="file-input-wrapper">
+                <button class="btn btn-secondary" onclick="document.getElementById('localFile').click()">
+                    📂 本地导入
+                </button>
+                <input type="file" id="localFile" accept=".json" onchange="importLocalData(event)">
+            </div>
+            <button class="btn btn-primary" onclick="forceRefresh()" id="refreshBtn" disabled>
+                🔄 强制刷新
+            </button>
+            <button class="btn btn-success" onclick="exportLocalData()">
+                💾 导出本地备份
+            </button>
+        </div>
+
+        <div class="main-layout">
+            <div class="sidebar">
+                <!-- 核心角色模块：项目经理 + 客户负责人 -->
+                <div class="module">
+                    <div class="module-title">
+                        👥 核心角色
+                        <span class="selected-count" id="coreCount">已选: 0人</span>
+                    </div>
+                    
+                    <div class="role-group">
+                        <div class="role-label">项目经理（单选）</div>
+                        <div id="pmList"></div>
+                    </div>
+                    
+                    <div class="role-group">
+                        <div class="role-label">客户负责人（单选）</div>
+                        <div id="clientList"></div>
+                    </div>
+                </div>
+
+                <!-- 项目支持：可选多选 -->
+                <div class="module">
+                    <div class="module-title">
+                        🛠️ 项目支持
+                        <span style="font-size: 0.7em; color: #f57c00; margin-left: 5px;">(可选/多选)</span>
+                        <span class="selected-count" id="supportCount">已选: 0人</span>
+                    </div>
+                    <div id="supportList"></div>
+                    <p style="font-size: 0.8em; color: #999; margin-top: 10px;">
+                        💡 项目支持人员会显示冲击标识但不强制选择
+                    </p>
+                </div>
+
+                <!-- 休假模块 -->
+                <div class="module">
+                    <div class="module-title">
+                        🌴 休假安排
+                        <span class="selected-count" id="leaveCount">已选: 0人</span>
+                    </div>
+                    <div id="leaveList"></div>
+                </div>
+
+                <div class="stats-panel">
+                    <h3 style="margin-bottom: 15px;">📈 工作量统计</h3>
+                    <div id="workloadStats"></div>
+                </div>
+            </div>
+
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <h2 id="currentMonth">2026年4月</h2>
+                    <div class="month-nav">
+                        <button class="btn btn-primary" onclick="changeMonth(-1)">◀ 上月</button>
+                        <button class="btn btn-primary" onclick="changeMonth(1)">下月 ▶</button>
+                        <button class="btn btn-primary" onclick="openModal()">➕ 添加项目</button>
+                    </div>
+                </div>
+
+                <div class="calendar-grid" id="calendar">
+                    <div class="weekday-header">日</div>
+                    <div class="weekday-header">一</div>
+                    <div class="weekday-header">二</div>
+                    <div class="weekday-header">三</div>
+                    <div class="weekday-header">四</div>
+                    <div class="weekday-header">五</div>
+                    <div class="weekday-header">六</div>
+                </div>
+
+                <div class="phase-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e1bee7;"></div>
+                        <span>方案阶段 (40%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #81c784;"></div>
+                        <span>准备阶段 (30-50% 设备量)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffcdd2;"></div>
+                        <span>冲击阶段 (80%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ffebee; border: 2px solid #ffcdd2;"></div>
+                        <span>休假锁定</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加项目模态框 -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2 style="margin-bottom: 20px;">添加新项目</h2>
+            
+            <div class="form-group">
+                <label>项目名称</label>
+                <input type="text" id="projectName" placeholder="输入项目名称">
+            </div>
+
+            <div class="form-group">
+                <label>项目阶段</label>
+                <select id="projectPhase" onchange="updatePhaseOptions()">
+                    <option value="proposal">方案阶段 (40%)</option>
+                    <option value="prep">准备阶段 (30-50%)</option>
+                    <option value="impact">冲击阶段 (80%)</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="equipmentGroup" style="display: none;">
+                <label>设备数量（决定准备阶段强度）</label>
+                <select id="equipmentCount">
+                    <option value="30">少量设备 (30%)</option>
+                    <option value="40">中等设备 (40%)</option>
+                    <option value="50">大量设备 (50%)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>选择人员</label>
+                <div class="checkbox-group" id="personCheckboxes"></div>
+            </div>
+
+            <div class="form-group">
+                <label>日期范围</label>
+                <input type="date" id="startDate">
+                <input type="date" id="endDate" style="margin-top: 10px;">
+            </div>
+
+            <button class="btn btn-primary" onclick="addProject()" style="width: 100%; margin-top: 10px;">
+                确认添加
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ==================== 项目身份定义 ====================
+        // 项目经理：6人（单选）
+        const pmList = ['刘絮', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles'];
+        
+        // 现场负责人（Onsite）：7人（单选，包含 Daizy）
+        const onsiteList = ['刘絮', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles', 'Daizy'];
+        
+        // 客户负责人：3人（单选）
+        const clientList = ['刘絮', 'Huan', 'Daizy'];
+        
+        // 项目支持：可选多选
+        const supportList = ['技术支持A', '技术支持B', '实施工程师C', '实施工程师D', '运维E', '运维F'];
+        
+        // 休假类型
+        const leaveTypes = ['年假', '病假', '事假', '调休'];
+
+        // ==================== 全局状态 ====================
+        let currentDate = new Date(2026, 3, 1);
+        let selectedPeople = {
+            pm: null,        // 单选：项目经理
+            onsite: null,    // 单选：现场负责人
+            client: null,    // 单选：客户负责人
+            support: new Set(), // 多选：项目支持（可选）
+            leave: new Set()    // 多选：休假
+        };
+        let projects = [];
+        let leaveRecords = [];
+        
+        // GitHub 配置
+        let githubConfig = {
+            user: '',
+            repo: '',
+            branch: 'main',
+            path: 'data.json'
+        };
+
+        // ==================== 初始化 ====================
+        function init() {
+            loadConfig();
+            renderPeople();
+            renderCalendar();
+            updateStats();
+            
+            // 如果有配置，自动连接
+            if (githubConfig.user && githubConfig.repo) {
+                connectToGitHub();
+            }
+        }
+
+        // ==================== 配置管理 ====================
+        function loadConfig() {
+            const saved = localStorage.getItem('githubConfig');
+            if (saved) {
+                githubConfig = JSON.parse(saved);
+                document.getElementById('githubUser').value = githubConfig.user || '';
+                document.getElementById('githubRepo').value = githubConfig.repo || '';
+                document.getElementById('githubBranch').value = githubConfig.branch || 'main';
+                document.getElementById('githubPath').value = githubConfig.path || 'data.json';
+            }
+        }
+
+        function saveConfig() {
+            githubConfig = {
+                user: document.getElementById('githubUser').value.trim(),
+                repo: document.getElementById('githubRepo').value.trim(),
+                branch: document.getElementById('githubBranch').value.trim() || 'main',
+                path: document.getElementById('githubPath').value.trim() || 'data.json'
+            };
+            localStorage.setItem('githubConfig', JSON.stringify(githubConfig));
+            showToast('配置已保存到本地', 'success');
+        }
+
+        function getGitHubRawUrl() {
+            if (!githubConfig.user || !githubConfig.repo) return null;
+            return `https://raw.githubusercontent.com/${githubConfig.user}/${githubConfig.repo}/${githubConfig.branch}/${githubConfig.path}`;
+        }
+
+        // ==================== GitHub 同步功能 ====================
+        async function connectToGitHub() {
+            saveConfig();
+            const url = getGitHubRawUrl();
+            
+            if (!url) {
+                showToast('请填写 GitHub 用户名和仓库名', 'error');
+                return;
+            }
+
+            document.getElementById('syncUrl').textContent = `数据源: ${url}`;
+            document.getElementById('syncStatus').textContent = '🟡 正在连接...';
+            document.getElementById('syncStatus').className = 'sync-status';
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    cache: 'no-cache', // 强制获取最新数据
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                if (validateImportData(data)) {
+                    restoreData(data.data || data);
+                    document.getElementById('syncStatus').textContent = `🟢 已同步 (${new Date().toLocaleTimeString()})`;
+                    document.getElementById('syncStatus').className = 'sync-status online';
+                    document.getElementById('refreshBtn').disabled = false;
+                    showToast('GitHub 数据同步成功！', 'success');
+                } else {
+                    throw new Error('数据格式验证失败');
+                }
+            } catch (error) {
+                console.error('Sync error:', error);
+                document.getElementById('syncStatus').textContent = `🔴 同步失败: ${error.message}`;
+                document.getElementById('syncStatus').className = 'sync-status offline';
+                showToast(`同步失败: ${error.message}`, 'error');
+            }
+        }
+
+        function forceRefresh() {
+            connectToGitHub();
+        }
+
+        // ==================== 人员渲染 ====================
+        function renderPeople() {
+            // 项目经理（单选）
+            const pmContainer = document.getElementById('pmList');
+            pmContainer.innerHTML = pmList.map(pm => 
+                `<span class="person-tag pm-tag ${selectedPeople.pm === pm ? 'selected' : ''}" 
+                       onclick="selectSingle('pm', '${pm}')">${pm}</span>`
+            ).join('');
+
+            // 客户负责人（单选）- 使用 onsiteList 但显示为"客户负责人"
+            const clientContainer = document.getElementById('clientList');
+            clientContainer.innerHTML = clientList.map(client => 
+                `<span class="person-tag client-tag ${selectedPeople.client === client ? 'selected' : ''}" 
+                       onclick="selectSingle('client', '${client}')">${client}</span>`
+            ).join('');
+
+            // 项目支持（多选，可选）
+            const supportContainer = document.getElementById('supportList');
+            supportContainer.innerHTML = supportList.map(support => 
+                `<span class="person-tag support-tag optional ${selectedPeople.support.has(support) ? 'selected' : ''}" 
+                       onclick="toggleMultiple('support', '${support}', this)">${support}</span>`
+            ).join('');
+
+            // 休假（多选）
+            const leaveContainer = document.getElementById('leaveList');
+            leaveContainer.innerHTML = leaveTypes.map(leave => 
+                `<span class="person-tag leave-tag ${selectedPeople.leave.has(leave) ? 'selected' : ''}" 
+                       onclick="toggleMultiple('leave', '${leave}', this)">${leave}</span>`
+            ).join('');
+
+            updateCounts();
+        }
+
+        // 单选逻辑
+        function selectSingle(type, name) {
+            if (selectedPeople[type] === name) {
+                selectedPeople[type] = null; // 取消选择
+            } else {
+                selectedPeople[type] = name; // 切换选择
+            }
+            renderPeople();
+            renderCalendar();
+            updateStats();
+        }
+
+        // 多选逻辑
+        function toggleMultiple(type, name, element) {
+            if (selectedPeople[type].has(name)) {
+                selectedPeople[type].delete(name);
+                element.classList.remove('selected');
+            } else {
+                selectedPeople[type].add(name);
+                element.classList.add('selected');
+            }
+            updateCounts();
+            renderCalendar();
+            updateStats();
+        }
+
+        function updateCounts() {
+            const coreCount = (selectedPeople.pm ? 1 : 0) + (selectedPeople.client ? 1 : 0);
+            document.getElementById('coreCount').textContent = `已选: ${coreCount}/2人`;
+            document.getElementById('supportCount').textContent = `已选: ${selectedPeople.support.size}人`;
+            document.getElementById('leaveCount').textContent = `已选: ${selectedPeople.leave.size}人`;
+        }
+
+        // ==================== 日历渲染 ====================
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            const headers = Array.from(calendar.querySelectorAll('.weekday-header'));
+            calendar.innerHTML = '';
+            headers.forEach(h => calendar.appendChild(h));
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('currentMonth').textContent = `${year}年${month + 1}月`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                calendar.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = createDayElement(year, month, day);
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        function createDayElement(year, month, day) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isLeaveDay = checkIfLeaveDay(dateStr);
+            
+            if (isLeaveDay) {
+                dayElement.classList.add('disabled');
+            }
+
+            let html = `<div class="day-number">${day}</div>`;
+            
+            // 获取当天项目
+            const dayProjects = getDayProjects(dateStr);
+            
+            // 渲染阶段标识
+            dayProjects.forEach(project => {
+                const { class: phaseClass, text: phaseText } = getPhaseInfo(project);
+                html += `<span class="phase-indicator ${phaseClass}">${phaseText}</span>`;
+            });
+
+            // 冲击标识逻辑：项目支持人员被选中时显示
+            const hasImpact = shouldShowImpact(dayProjects, dateStr);
+            if (hasImpact && !isLeaveDay) {
+                html += `<div class="impact-marker" title="项目支持冲击"></div>`;
+            }
+
+            // 人员头像
+            const involvedPeople = getInvolvedPeople(dayProjects);
+            if (involvedPeople.size > 0) {
+                html += `<div class="person-avatars">`;
+                involvedPeople.forEach(person => {
+                    const color = getPersonColor(person);
+                    html += `<div class="mini-avatar" style="background: ${color}">${person.charAt(0)}</div>`;
+                });
+                html += `</div>`;
+            }
+
+            dayElement.innerHTML = html;
+            if (!isLeaveDay) {
+                dayElement.onclick = () => openModal(dateStr);
+            }
+            
+            return dayElement;
+        }
+
+        function getDayProjects(dateStr) {
+            return projects.filter(p => {
+                const start = new Date(p.startDate);
+                const end = new Date(p.endDate);
+                const current = new Date(dateStr);
+                return current >= start && current <= end;
+            });
+        }
+
+        function getPhaseInfo(project) {
+            switch(project.phase) {
+                case 'proposal':
+                    return { class: 'phase-proposal', text: '方案 40%' };
+                case 'prep':
+                    const intensity = project.equipment || 40;
+                    let className = 'phase-prep-medium';
+                    if (intensity <= 30) className = 'phase-prep-light';
+                    else if (intensity >= 50) className = 'phase-prep-heavy';
+                    return { class: className, text: `准备 ${intensity}%` };
+                case 'impact':
+                    return { class: 'phase-impact', text: '冲击 80%' };
+                default:
+                    return { class: '', text: '' };
+            }
+        }
+
+        function shouldShowImpact(dayProjects, dateStr) {
+            // 1. 有冲击阶段项目
+            const hasImpactProject = dayProjects.some(p => p.phase === 'impact');
+            // 2. 有选中的项目支持人员
+            const hasSelectedSupport = selectedPeople.support.size > 0;
+            // 3. 有项目支持人员参与的项目
+            const hasSupportInvolved = dayProjects.some(p => 
+                p.people.some(person => supportList.includes(person))
+            );
+            
+            return hasImpactProject || (hasSelectedSupport && hasSupportInvolved);
+        }
+
+        function getInvolvedPeople(dayProjects) {
+            const involved = new Set();
+            dayProjects.forEach(p => p.people.forEach(person => involved.add(person)));
+            return involved;
+        }
+
+        function checkIfLeaveDay(dateStr) {
+            return leaveRecords.some(leave => {
+                const start = new Date(leave.startDate);
+                const end = new Date(leave.endDate);
+                const current = new Date(dateStr);
+                return current >= start && current <= end;
+            });
+        }
+
+        function getPersonColor(name) {
+            if (pmList.includes(name)) return '#1976d2';
+            if (clientList.includes(name)) return '#388e3c';
+            if (supportList.includes(name)) return '#f57c00';
+            if (onsiteList.includes(name)) return '#7b1fa2'; // 现场负责人紫色
+            return '#999';
+        }
+
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        // ==================== 模态框功能 ====================
+        function openModal(dateStr = null) {
+            if (dateStr && checkIfLeaveDay(dateStr)) {
+                showToast('该日期为休假日，无法添加项目！', 'error');
+                return;
+            }
+
+            document.getElementById('projectModal').style.display = 'flex';
+            renderPersonCheckboxes();
+            
+            if (dateStr) {
+                document.getElementById('startDate').value = dateStr;
+                document.getElementById('endDate').value = dateStr;
+            }
+        }
+
+        function renderPersonCheckboxes() {
+            const container = document.getElementById('personCheckboxes');
+            let html = '<div style="width: 100%; margin-bottom: 10px;"><strong>项目经理（必选）</strong></div>';
+            
+            pmList.forEach(pm => {
+                html += `<label class="checkbox-item"><input type="checkbox" value="${pm}" data-type="pm">${pm}</label>`;
+            });
+            
+            html += '<div style="width: 100%; margin: 10px 0;"><strong>客户负责人（必选）</strong></div>';
+            clientList.forEach(client => {
+                html += `<label class="checkbox-item"><input type="checkbox" value="${client}" data-type="client">${client}</label>`;
+            });
+            
+            html += '<div style="width: 100%; margin: 10px 0;"><strong>项目支持（可选，可多选）</strong></div>';
+            supportList.forEach(support => {
+                html += `<label class="checkbox-item"><input type="checkbox" value="${support}" data-type="support">${support}</label>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').style.display = 'none';
+            document.getElementById('projectName').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+        }
+
+        function updatePhaseOptions() {
+            const phase = document.getElementById('projectPhase').value;
+            document.getElementById('equipmentGroup').style.display = phase === 'prep' ? 'block' : 'none';
+        }
+
+        function addProject() {
+            const name = document.getElementById('projectName').value;
+            const phase = document.getElementById('projectPhase').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const equipment = document.getElementById('equipmentCount')?.value;
+
+            if (!name || !startDate || !endDate) {
+                showToast('请填写完整信息', 'error');
+                return;
+            }
+
+            // 检查休假日冲突
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                if (checkIfLeaveDay(dateStr)) {
+                    showToast(`日期范围包含休假日 (${dateStr})`, 'error');
+                    return;
+                }
+            }
+
+            // 获取选中的人员
+            const checkboxes = document.querySelectorAll('#personCheckboxes input:checked');
+            const selectedPeopleList = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedPeopleList.length === 0) {
+                showToast('请至少选择一名人员', 'error');
+                return;
+            }
+
+            const project = {
+                id: Date.now(),
+                name,
+                phase,
+                startDate,
+                endDate,
+                people: selectedPeopleList,
+                equipment: equipment || null,
+                createdAt: new Date().toISOString()
+            };
+
+            projects.push(project);
+            closeModal();
+            renderCalendar();
+            updateStats();
+            showToast('项目添加成功！（记得导出到 GitHub）', 'success');
+        }
+
+        // ==================== 统计功能 ====================
+        function updateStats() {
+            const stats = {};
+            const allPeople = [...pmList, ...clientList, ...supportList, ...onsiteList];
+            allPeople.forEach(person => {
+                stats[person] = { proposal: 0, prep: 0, impact: 0, total: 0 };
+            });
+
+            projects.forEach(project => {
+                const days = Math.ceil((new Date(project.endDate) - new Date(project.startDate)) / (1000 * 60 * 60 * 24)) + 1;
+                const load = project.phase === 'proposal' ? 0.4 : 
+                            project.phase === 'prep' ? (project.equipment || 40) / 100 : 0.8;
+                
+                project.people.forEach(person => {
+                    if (stats[person]) {
+                        stats[person][project.phase] += days * load;
+                        stats[person].total += days * load;
+                    }
+                });
+            });
+
+            const container = document.getElementById('workloadStats');
+            let html = '';
+            
+            Object.entries(stats).forEach(([person, data]) => {
+                if (data.total > 0 || isPersonSelected(person)) {
+                    const percentage = Math.min((data.total / 20) * 100, 100);
+                    html += `
+                        <div class="stat-item">
+                            <span>${person}</span>
+                            <span>${data.total.toFixed(1)} 人天</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%; background: ${getPersonColor(person)}"></div>
+                        </div>
+                    `;
+                }
+            });
+            
+            container.innerHTML = html || '<p style="color: #999; text-align: center;">暂无数据</p>';
+        }
+
+        function isPersonSelected(person) {
+            return selectedPeople.pm === person || 
+                   selectedPeople.client === person ||
+                   selectedPeople.support.has(person) ||
+                   selectedPeople.leave.has(person);
+        }
+
+        // ==================== 导入导出功能 ====================
+        function exportToGitHubFormat() {
+            const exportData = {
+                version: '1.0',
+                exportTime: new Date().toISOString(),
+                data: {
+                    projects: projects,
+                    leaveRecords: leaveRecords,
+                    selectedPeople: {
+                        pm: selectedPeople.pm,
+                        client: selectedPeople.client,
+                        support: Array.from(selectedPeople.support),
+                        leave: Array.from(selectedPeople.leave)
+                    },
+                    currentDate: currentDate.toISOString()
+                }
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('已生成 GitHub 格式文件 (data.json)，请上传到仓库', 'success');
+            
+            // 显示复制提示
+            const syncHint = document.querySelector('.sync-hint');
+            syncHint.innerHTML = `
+                <strong>📋 下一步操作：</strong><br>
+                1. 下载了 data.json 文件<br>
+                2. 上传到 GitHub 仓库: <code>${githubConfig.repo || '你的仓库'}</code><br>
+                3. Push 到 ${githubConfig.branch || 'main'} 分支<br>
+                4. 所有人刷新页面即可看到更新
+            `;
+        }
+
+        function exportLocalData() {
+            const exportData = {
+                version: '1.0',
+                exportTime: new Date().toISOString(),
+                data: {
+                    projects: projects,
+                    leaveRecords: leaveRecords,
+                    selectedPeople: {
+                        pm: selectedPeople.pm,
+                        client: selectedPeople.client,
+                        support: Array.from(selectedPeople.support),
+                        leave: Array.from(selectedPeople.leave)
+                    },
+                    currentDate: currentDate.toISOString()
+                }
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const timestamp = new Date().toISOString().split('T')[0];
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `项目周期管理_备份_${timestamp}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            showToast('本地备份已导出', 'success');
+        }
+
+        function importLocalData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            event.target.value = '';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (validateImportData(data)) {
+                        restoreData(data.data || data);
+                        showToast('本地数据导入成功！', 'success');
+                    }
+                } catch (error) {
+                    showToast('导入失败: ' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function validateImportData(data) {
+            if (!data || typeof data !== 'object') {
+                showToast('无效的数据格式', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function restoreData(data) {
+            projects = data.projects || [];
+            leaveRecords = data.leaveRecords || [];
+            
+            const sp = data.selectedPeople || {};
+            selectedPeople = {
+                pm: sp.pm || null,
+                client: sp.client || null,
+                support: new Set(sp.support || []),
+                leave: new Set(sp.leave || [])
+            };
+            
+            if (data.currentDate) {
+                currentDate = new Date(data.currentDate);
+            }
+
+            renderPeople();
+            renderCalendar();
+            updateStats();
+        }
+
+        // ==================== 工具函数 ====================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('projectModal');
+            if (event.target === modal) closeModal();
+        };
+
+        // 初始化
+        init();
+    </script>
+</body>
+</html>
