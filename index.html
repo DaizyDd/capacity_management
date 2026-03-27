@@ -107,7 +107,7 @@
             border: 2px solid #e0e0e0;
         }
 
-        /* ==================== 修复后的工作量视图 ==================== */
+        /* ==================== 工作量视图 ==================== */
         .workload-simple {
             background: white;
             border-radius: 15px;
@@ -123,12 +123,24 @@
             margin-bottom: 20px;
         }
 
-        /* 使用表格布局替代Grid，确保行对齐 */
         .workload-table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 2px;
-            min-width: 1200px; /* 确保最小宽度 */
+            min-width: 1200px;
+        }
+
+        /* 表格标题 - 显示月份 */
+        .workload-table caption {
+            caption-side: top;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            padding: 10px 0 15px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .workload-table th,
@@ -141,7 +153,7 @@
             vertical-align: middle;
         }
 
-        /* 人员名称列 - 固定宽度 */
+        /* 人员名称列 */
         .workload-table th:first-child,
         .workload-table td:first-child {
             width: 100px;
@@ -612,7 +624,7 @@
             <button class="btn btn-secondary" onclick="showView('workload')" id="workloadBtn">👥 工作量视图</button>
         </div>
 
-        <!-- 修复后的工作量视图 - 使用表格布局 -->
+        <!-- 工作量视图 -->
         <div id="workloadView" class="workload-simple" style="display: none;">
             <div class="workload-header">
                 <div>
@@ -627,7 +639,7 @@
             
             <div style="overflow-x: auto;">
                 <table id="workloadTable" class="workload-table">
-                    <!-- 动态生成 -->
+                    <!-- 动态生成，包含caption显示月份 -->
                 </table>
             </div>
         </div>
@@ -822,7 +834,7 @@
             }
         }
 
-        // ==================== 修复后的工作量视图 ====================
+        // ==================== 工作量视图 ====================
         function changeWorkloadMonth(delta) {
             workloadDate.setMonth(workloadDate.getMonth() + delta);
             renderWorkload();
@@ -834,6 +846,9 @@
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
             const table = document.getElementById('workloadTable');
+            
+            // 构建表格标题（显示月份）
+            let captionHTML = `<caption>${year}年${month + 1}月 工作量统计</caption>`;
             
             // 构建表头
             let theadHTML = '<thead><tr><th>人员</th>';
@@ -864,7 +879,7 @@
             
             tbodyHTML += '</tbody>';
             
-            table.innerHTML = theadHTML + tbodyHTML;
+            table.innerHTML = captionHTML + theadHTML + tbodyHTML;
         }
 
         function getWorkloadCellData(person, dateStr) {
