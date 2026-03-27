@@ -107,92 +107,90 @@
             border: 2px solid #e0e0e0;
         }
 
-        /* ==================== 简化工作量视图 ==================== */
-       .workload-simple {
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    overflow-x: auto;
-    overflow-y: hidden;
-}
+        /* ==================== 修复后的工作量视图 ==================== */
+        .workload-simple {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
 
         .workload-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-       .workload-grid-simple {
-    display: grid;
-    grid-template-columns: 140px repeat(31, 56px);
-    gap: 4px;
-    width: max-content;
-    min-width: 100%;
-}
+        /* 使用表格布局替代Grid，确保行对齐 */
+        .workload-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+            min-width: 1200px; /* 确保最小宽度 */
+        }
 
-       .workload-cell-simple {
-    min-height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    border-radius: 6px;
-    position: relative;
-    line-height: 1.2;
-    text-align: center;
-    padding: 4px;
-}
+        .workload-table th,
+        .workload-table td {
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 0.85em;
+            border-radius: 4px;
+            height: 45px;
+            vertical-align: middle;
+        }
 
-        .workload-person-simple {
-    background: #667eea;
-    color: white;
-    font-size: 14px;
-    position: sticky;
-    left: 0;
-    z-index: 10;
-    justify-content: flex-start;
-    padding: 0 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    box-shadow: 4px 0 8px rgba(0,0,0,0.08);
-}
-        .workload-date-header-simple {
-    background: #f5f5f5;
-    color: #555;
-    font-size: 12px;
-    padding: 6px 4px;
-    line-height: 1.2;
-}
-        .workload-date-header-simple.weekend {
+        /* 人员名称列 - 固定宽度 */
+        .workload-table th:first-child,
+        .workload-table td:first-child {
+            width: 100px;
+            min-width: 100px;
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+        /* 日期表头 */
+        .workload-table th {
+            background: #f5f5f5;
+            color: #666;
+            font-weight: bold;
+            font-size: 0.75em;
+        }
+
+        .workload-table th.weekend {
             background: #ffebee;
             color: #d32f2f;
         }
 
-        /* 工作量颜色 - 只显示总负荷 */
+        /* 工作量状态颜色 */
         .workload-low {
             background: #c8e6c9;
             color: #2e7d32;
+            font-weight: bold;
         }
 
         .workload-medium {
             background: #81c784;
             color: #1b5e20;
+            font-weight: bold;
         }
 
         .workload-high {
             background: #ffb74d;
             color: #e65100;
+            font-weight: bold;
         }
 
         .workload-overload {
             background: #ff5252;
             color: white;
+            font-weight: bold;
         }
 
         .workload-leave-simple {
@@ -208,11 +206,10 @@
 
         /* ==================== 日历视图 ==================== */
         .main-layout {
-    display: grid;
-    grid-template-columns: 280px minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
-}
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 30px;
+        }
 
         .sidebar {
             display: flex;
@@ -270,7 +267,6 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
-        /* 选中状态 - 用于日历高亮关联 */
         .person-tag.active-filter {
             animation: glow 2s infinite;
         }
@@ -311,20 +307,18 @@
         }
 
         .calendar-section {
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    min-width: 0;
-}
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
         .calendar-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-}
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
         .month-nav {
             display: flex;
@@ -363,7 +357,6 @@
             transform: scale(1.02);
         }
 
-        /* 关联人员高亮 */
         .calendar-day.has-related-project {
             border-color: #667eea;
             border-width: 3px;
@@ -397,7 +390,6 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* 关联项目高亮 */
         .project-item.related-project {
             box-shadow: 0 0 0 2px #667eea;
             transform: scale(1.05);
@@ -457,23 +449,19 @@
         }
 
         .phase-legend {
-    display: flex;
-    gap: 12px;
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-}
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
         .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.9em;
-    padding: 6px 10px;
-    background: #f8f8f8;
-    border-radius: 999px;
-    white-space: nowrap;
-}
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
 
         .legend-color {
             width: 20px;
@@ -598,61 +586,7 @@
             font-size: 0.85em;
             color: #1976d2;
         }
-   @media (max-width: 1200px) {
-    .main-layout {
-        grid-template-columns: 1fr;
-        gap: 20px;
-    }
-}
-
-@media (max-width: 768px) {
-    body {
-        padding: 12px;
-    }
-
-    .container {
-        padding: 16px;
-        border-radius: 16px;
-    }
-
-    h1 {
-        font-size: 1.8rem;
-    }
-
-    .toolbar,
-    .view-toggle {
-        justify-content: flex-start;
-    }
-
-    .workload-header,
-    .calendar-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .workload-grid-simple {
-        grid-template-columns: 120px repeat(31, 52px);
-    }
-
-    .workload-person-simple {
-        font-size: 13px;
-        padding: 0 10px;
-    }
-
-    .calendar-day {
-        min-height: 84px;
-        padding: 6px;
-    }
-
-    .project-item {
-        font-size: 0.7em;
-        padding: 2px 4px;
-    }
-
-    .phase-legend {
-        gap: 8px;
-    }
-</style>
+    </style>
 </head>
 <body>
     <div class="container">
@@ -678,7 +612,7 @@
             <button class="btn btn-secondary" onclick="showView('workload')" id="workloadBtn">👥 工作量视图</button>
         </div>
 
-        <!-- 简化工作量视图 -->
+        <!-- 修复后的工作量视图 - 使用表格布局 -->
         <div id="workloadView" class="workload-simple" style="display: none;">
             <div class="workload-header">
                 <div>
@@ -692,7 +626,9 @@
             </div>
             
             <div style="overflow-x: auto;">
-                <div id="workloadGrid" class="workload-grid-simple"></div>
+                <table id="workloadTable" class="workload-table">
+                    <!-- 动态生成 -->
+                </table>
             </div>
         </div>
 
@@ -859,7 +795,6 @@
             client: null,
             support: new Set()
         };
-        // 当前用于过滤日历的人员
         let activeFilterPerson = null;
         let projects = [];
         let currentView = 'calendar';
@@ -887,7 +822,7 @@
             }
         }
 
-        // ==================== 简化工作量视图 ====================
+        // ==================== 修复后的工作量视图 ====================
         function changeWorkloadMonth(delta) {
             workloadDate.setMonth(workloadDate.getMonth() + delta);
             renderWorkload();
@@ -898,52 +833,41 @@
             const month = workloadDate.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             
-            const grid = document.getElementById('workloadGrid');
-            let html = '';
+            const table = document.getElementById('workloadTable');
             
-            // 表头：日期
-            html += '<div class="workload-cell-simple workload-person-simple">人员</div>';
+            // 构建表头
+            let theadHTML = '<thead><tr><th>人员</th>';
             for (let d = 1; d <= daysInMonth; d++) {
                 const date = new Date(year, month, d);
                 const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                const dayClass = isWeekend ? 'workload-date-header-simple weekend' : 'workload-date-header-simple';
-                html += `<div class="workload-cell-simple ${dayClass}">${d}</div>`;
+                const dayClass = isWeekend ? 'weekend' : '';
+                theadHTML += `<th class="${dayClass}">${d}</th>`;
             }
+            theadHTML += '</tr></thead>';
             
-            // 只显示需要统计的7人
+            // 构建表体
+            let tbodyHTML = '<tbody>';
+            
             workloadPeople.forEach(person => {
-                html += `<div class="workload-cell-simple workload-person-simple">${person}</div>`;
+                tbodyHTML += '<tr>';
+                tbodyHTML += `<td>${person}</td>`;
                 
                 for (let d = 1; d <= daysInMonth; d++) {
                     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    const totalLoad = calculateDailyWorkload(person, dateStr);
+                    const cellData = getWorkloadCellData(person, dateStr);
                     
-                    let cellClass = 'workload-empty-simple';
-                    let displayValue = '';
-                    
-                    if (totalLoad === -1) { // 休假
-                        cellClass = 'workload-leave-simple';
-                        displayValue = '休';
-                    } else if (totalLoad > 0) {
-                        displayValue = totalLoad + '%';
-                        if (totalLoad <= 40) cellClass = 'workload-low';
-                        else if (totalLoad <= 70) cellClass = 'workload-medium';
-                        else if (totalLoad <= 100) cellClass = 'workload-high';
-                        else {
-                            cellClass = 'workload-overload';
-                            displayValue = totalLoad + '%!';
-                        }
-                    }
-                    
-                    html += `<div class="workload-cell-simple ${cellClass}">${displayValue}</div>`;
+                    tbodyHTML += `<td class="${cellData.class}" title="${cellData.title}">${cellData.value}</td>`;
                 }
+                
+                tbodyHTML += '</tr>';
             });
             
-            grid.innerHTML = html;
+            tbodyHTML += '</tbody>';
+            
+            table.innerHTML = theadHTML + tbodyHTML;
         }
 
-        // 计算单日总工作量，返回-1表示休假
-        function calculateDailyWorkload(person, dateStr) {
+        function getWorkloadCellData(person, dateStr) {
             const dayProjects = projects.filter(p => {
                 const start = new Date(p.startDate);
                 const end = new Date(p.endDate);
@@ -951,18 +875,47 @@
                 return current >= start && current <= end && p.people.includes(person);
             });
 
-            if (dayProjects.some(p => p.phase === 'leave')) return -1;
+            if (dayProjects.some(p => p.phase === 'leave')) {
+                return {
+                    class: 'workload-leave-simple',
+                    title: '休假',
+                    value: '休'
+                };
+            }
 
-            let total = 0;
+            let totalLoad = 0;
+            let titles = [];
+            
             dayProjects.forEach(p => {
+                let load = 0;
                 switch(p.phase) {
-                    case 'proposal': total += 40; break;
-                    case 'prep': total += parseInt(p.equipment) || 40; break;
-                    case 'impact': total += 80; break;
+                    case 'proposal': load = 40; break;
+                    case 'prep': load = parseInt(p.equipment) || 40; break;
+                    case 'impact': load = 80; break;
                 }
+                totalLoad += load;
+                titles.push(`${p.name}(${load}%)`);
             });
 
-            return total;
+            if (totalLoad === 0) {
+                return {
+                    class: 'workload-empty-simple',
+                    title: '无项目',
+                    value: ''
+                };
+            }
+
+            let cellClass = 'workload-low';
+            if (totalLoad <= 40) cellClass = 'workload-low';
+            else if (totalLoad <= 70) cellClass = 'workload-medium';
+            else if (totalLoad <= 100) cellClass = 'workload-high';
+            else cellClass = 'workload-overload';
+
+            return {
+                class: cellClass,
+                title: titles.join('\n'),
+                value: totalLoad + '%'
+            };
         }
 
         // ==================== 人员与日历关联 ====================
@@ -993,7 +946,6 @@
         }
 
         function selectPerson(type, name) {
-            // 切换选中状态
             if (type === 'pm') {
                 selectedPeople.pm = selectedPeople.pm === name ? null : name;
             } else if (type === 'client') {
@@ -1006,15 +958,14 @@
                 }
             }
 
-            // 设置日历过滤人员（点击即过滤）
             if (activeFilterPerson === name) {
-                activeFilterPerson = null; // 再次点击取消过滤
+                activeFilterPerson = null;
             } else {
                 activeFilterPerson = name;
             }
 
             renderPeople();
-            renderCalendar();
+            if (currentView === 'calendar') renderCalendar();
         }
 
         function updateCounts() {
@@ -1035,7 +986,7 @@
             }
         }
 
-        // ==================== 日历渲染（带人员关联高亮）====================
+        // ==================== 日历渲染 ====================
         function renderCalendar() {
             const calendar = document.getElementById('calendar');
             const headers = Array.from(calendar.querySelectorAll('.weekday-header'));
@@ -1063,11 +1014,9 @@
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const dayProjects = getDayProjects(dateStr);
             
-            // 检查是否有休假
             const hasLeave = dayProjects.some(p => p.phase === 'leave');
             if (hasLeave) dayElement.classList.add('disabled');
 
-            // 检查是否与选中人员关联
             let hasRelatedProject = false;
             if (activeFilterPerson) {
                 hasRelatedProject = dayProjects.some(p => p.people.includes(activeFilterPerson));
@@ -1078,7 +1027,6 @@
 
             let html = `<div class="day-number">${day}</div>`;
             
-            // 显示项目（关联项目高亮）
             dayProjects.forEach(project => {
                 const classes = getProjectItemClass(project);
                 const isRelated = activeFilterPerson && project.people.includes(activeFilterPerson);
@@ -1090,7 +1038,6 @@
                 </div>`;
             });
 
-            // 冲击标识
             const hasImpact = dayProjects.some(p => p.phase === 'impact') || 
                              (selectedPeople.support.size > 0 && dayProjects.some(p => 
                                 p.people.some(person => supportList.includes(person))));
