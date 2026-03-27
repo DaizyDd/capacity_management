@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "exportTime": "2026-03-26T15:53:12.202Z",
+  "exportTime": "2026-03-27T07:57:54.834Z",
   "projects": [
     {
       "id": 1774539351796,
@@ -34,7 +34,7 @@
     },
     {
       "id": 1774539437597,
-      "name": "INSH Chengdu Offsite",
+      "name": "INSH Chengdu ",
       "phase": "prep",
       "startDate": "2026-03-26",
       "endDate": "2026-04-05",
@@ -46,11 +46,12 @@
     },
     {
       "id": 1774539467148,
-      "name": "INSH Chengdu Offsite",
+      "name": "INSH Chengdu ",
       "phase": "impact",
       "startDate": "2026-04-06",
       "endDate": "2026-04-12",
       "people": [
+        "Huan",
         "Huan",
         "Daizy",
         "Daizy",
@@ -335,12 +336,24 @@
         "思璇"
       ],
       "equipment": null
+    },
+    {
+      "id": 1774598237958,
+      "name": "Bain Changsha ",
+      "phase": "proposal",
+      "startDate": "2026-04-13",
+      "endDate": "2026-04-30",
+      "people": [
+        "思璇",
+        "鱼蛋"
+      ],
+      "equipment": null
     }
   ],
   "selectedPeople": {
-    "pm": "潘潘",
+    "pm": "思璇",
     "client": null,
     "support": []
   },
-  "currentDate": "2026-07-31T16:00:00.000Z"
+  "currentDate": "2026-03-31T16:00:00.000Z"
 }
