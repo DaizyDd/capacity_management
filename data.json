@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "exportTime": "2026-03-30T06:36:42.530Z",
+  "exportTime": "2026-04-13T07:25:55.465Z",
   "projects": [
     {
       "id": 1774539351796,
@@ -144,10 +144,13 @@
       "name": "中欧大理毕业班",
       "phase": "prep",
       "startDate": "2026-03-26",
-      "endDate": "2026-04-23",
+      "endDate": "2026-04-22",
       "people": [
+        "鱼蛋",
         "Miles",
-        "鱼蛋"
+        "鱼蛋",
+        "鱼蛋",
+        "Miles"
       ],
       "equipment": "40"
     },
@@ -170,9 +173,11 @@
       "id": 1774539880003,
       "name": "中欧大理毕业班",
       "phase": "impact",
-      "startDate": "2026-04-24",
+      "startDate": "2026-04-23",
       "endDate": "2026-04-29",
       "people": [
+        "鱼蛋",
+        "思璇",
         "Miles",
         "鱼蛋",
         "鱼蛋",
@@ -403,5 +408,5 @@
     "client": null,
     "support": []
   },
-  "currentDate": "2026-02-28T16:00:00.000Z"
+  "currentDate": "2026-04-30T16:00:00.000Z"
 }
