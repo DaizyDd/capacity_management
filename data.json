@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "exportTime": "2026-04-13T07:25:55.465Z",
+  "exportTime": "2026-04-20T05:58:05.609Z",
   "projects": [
     {
       "id": 1774539351796,
@@ -61,46 +61,6 @@
       "equipment": null
     },
     {
-      "id": 1774539498611,
-      "name": "波克城市",
-      "phase": "proposal",
-      "startDate": "2026-03-26",
-      "endDate": "2026-04-12",
-      "people": [
-        "鱼蛋",
-        "Daizy"
-      ],
-      "equipment": null
-    },
-    {
-      "id": 1774539529802,
-      "name": "波克城市",
-      "phase": "prep",
-      "startDate": "2026-04-13",
-      "endDate": "2026-05-15",
-      "people": [
-        "鱼蛋",
-        "Daizy",
-        "Kathy"
-      ],
-      "equipment": "30"
-    },
-    {
-      "id": 1774539565715,
-      "name": "波克城市",
-      "phase": "impact",
-      "startDate": "2026-05-18",
-      "endDate": "2026-06-21",
-      "people": [
-        "鱼蛋",
-        "Daizy",
-        "Daizy",
-        "鱼蛋",
-        "Kathy"
-      ],
-      "equipment": null
-    },
-    {
       "id": 1774539614275,
       "name": "波克城市",
       "phase": "prep",
@@ -135,7 +95,10 @@
       "endDate": "2026-04-30",
       "people": [
         "Huan",
-        "Daizy"
+        "Huan",
+        "Daizy",
+        "Daizy",
+        "Huan"
       ],
       "equipment": null
     },
@@ -401,6 +364,103 @@
         "Kathy"
       ],
       "equipment": "30"
+    },
+    {
+      "id": 1776663569186,
+      "name": "香格里拉婚礼旅行",
+      "phase": "proposal",
+      "startDate": "2026-04-20",
+      "endDate": "2026-05-31",
+      "people": [
+        "鱼蛋",
+        "鱼蛋",
+        "鱼蛋"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1776663656494,
+      "name": "临港实验室",
+      "phase": "proposal",
+      "startDate": "2026-04-20",
+      "endDate": "2026-06-30",
+      "people": [
+        "Huan",
+        "Huan"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1776663731890,
+      "name": "C capital",
+      "phase": "prep",
+      "startDate": "2026-04-20",
+      "endDate": "2026-05-16",
+      "people": [
+        "Huan",
+        "Huan"
+      ],
+      "equipment": "40"
+    },
+    {
+      "id": 1776663808214,
+      "name": "天演越野跑",
+      "phase": "proposal",
+      "startDate": "2026-04-20",
+      "endDate": "2026-05-30",
+      "people": [
+        "Kathy",
+        "鱼蛋"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1776663870745,
+      "name": "Brookfield offsite",
+      "phase": "proposal",
+      "startDate": "2026-04-20",
+      "endDate": "2026-05-11",
+      "people": [
+        "潘潘",
+        "Daizy"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1776663915870,
+      "name": "Google 家庭日",
+      "phase": "proposal",
+      "startDate": "2026-04-20",
+      "endDate": "2026-05-30",
+      "people": [
+        "潘潘",
+        "Daizy"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1776663996792,
+      "name": "腾讯云Danang",
+      "phase": "proposal",
+      "startDate": "2026-04-20",
+      "endDate": "2026-05-15",
+      "people": [
+        "Kathy",
+        "Daizy"
+      ],
+      "equipment": null
+    },
+    {
+      "id": 1776664160216,
+      "name": "MUJI董事会",
+      "phase": "proposal",
+      "startDate": "2026-04-20",
+      "endDate": "2026-05-30",
+      "people": [
+        "潘潘",
+        "Daizy"
+      ],
+      "equipment": null
     }
   ],
   "selectedPeople": {
