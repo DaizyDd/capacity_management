@@ -113,7 +113,6 @@
             border: 2px solid #e0e0e0;
         }
 
-        /* 搜索栏 */
         .search-bar {
             display: flex;
             gap: 10px;
@@ -162,7 +161,6 @@
             border-bottom: none;
         }
 
-        /* 批量操作 */
         .batch-operations {
             background: #fff3e0;
             border-left: 4px solid #ff9800;
@@ -178,13 +176,11 @@
             margin-top: 10px;
         }
 
-        /* 撤销/重做按钮 */
         .history-controls {
             display: flex;
             gap: 10px;
         }
 
-        /* ==================== 工作量视图 ==================== */
         .workload-simple {
             background: white;
             border-radius: 15px;
@@ -289,7 +285,6 @@
             color: #999;
         }
 
-        /* ==================== 日历视图 ==================== */
         .main-layout {
             display: grid;
             grid-template-columns: 300px 1fr;
@@ -434,7 +429,9 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            min-height: 100px;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
         }
 
         .calendar-day:hover {
@@ -465,16 +462,53 @@
             font-weight: bold;
             color: #333;
             margin-bottom: 5px;
+            flex-shrink: 0;
+        }
+
+        /* 项目列表容器 - 可滚动 */
+        .projects-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+            margin-right: -4px;
+        }
+
+        /* 自定义滚动条样式 */
+        .projects-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .projects-container::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+            border-radius: 3px;
+        }
+
+        .projects-container::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.5);
+            border-radius: 3px;
+        }
+
+        .projects-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.8);
+        }
+
+        /* Firefox 滚动条 */
+        .projects-container {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(102, 126, 234, 0.5) rgba(0,0,0,0.05);
         }
 
         .project-item {
             font-size: 0.75em;
-            padding: 2px 6px;
+            padding: 3px 6px;
             border-radius: 4px;
             margin-top: 4px;
             cursor: move;
             transition: all 0.2s;
             position: relative;
+            word-wrap: break-word;
+            flex-shrink: 0;
         }
 
         .project-item:hover {
@@ -541,11 +575,27 @@
             background: #ff5252;
             border-radius: 50%;
             animation: blink 1s infinite;
+            z-index: 1;
         }
 
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
+        }
+
+        /* 项目数量提示 */
+        .project-count-badge {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+            font-size: 0.7em;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-weight: bold;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .phase-legend {
@@ -968,6 +1018,9 @@
         <div class="shortcut-item"><span class="shortcut-key">Ctrl+S</span> 保存到本地</div>
         <div class="shortcut-item"><span class="shortcut-key">Esc</span> 关闭弹窗</div>
         <div class="shortcut-item"><span class="shortcut-key">?</span> 显示/隐藏此帮助</div>
+        <div class="shortcut-item" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #555;">
+            <strong>💡 提示：</strong>日历格子内可上下滚动查看所有项目
+        </div>
     </div>
 
     <script>
@@ -998,19 +1051,13 @@
         const MAX_HISTORY = 50;
 
         function saveToHistory() {
-            // 移除当前位置之后的所有历史
             history = history.slice(0, historyIndex + 1);
-            
-            // 添加新状态
             history.push(JSON.parse(JSON.stringify(projects)));
-            
-            // 限制历史记录数量
             if (history.length > MAX_HISTORY) {
                 history.shift();
             } else {
                 historyIndex++;
             }
-            
             updateHistoryButtons();
             autoSaveToLocal();
         }
@@ -1127,14 +1174,10 @@
             const project = projects.find(p => p.id === projectId);
             if (!project) return;
             
-            // 切换到日历视图
             showView('calendar');
-            
-            // 跳转到项目所在月份
             currentDate = new Date(project.startDate);
             renderCalendar();
             
-            // 高亮显示项目
             setTimeout(() => {
                 editProject(projectId);
             }, 300);
@@ -1223,10 +1266,6 @@
         }
 
         // ==================== 拖拽功能 ====================
-        function enableDragDrop() {
-            // 在渲染项目时添加拖拽事件
-        }
-
         function handleDragStart(e, projectId) {
             draggedProject = projectId;
             e.target.classList.add('dragging');
@@ -1237,7 +1276,6 @@
             e.target.classList.remove('dragging');
             draggedProject = null;
             
-            // 移除所有拖拽样式
             document.querySelectorAll('.calendar-day').forEach(day => {
                 day.classList.remove('dragging-over');
             });
@@ -1262,13 +1300,11 @@
             const project = projects.find(p => p.id === draggedProject);
             if (!project) return;
             
-            // 计算日期差
             const oldStart = new Date(project.startDate);
             const oldEnd = new Date(project.endDate);
             const newStart = new Date(newStartDate);
             const duration = (oldEnd - oldStart) / (1000 * 60 * 60 * 24);
             
-            // 更新日期
             const newEnd = new Date(newStart);
             newEnd.setDate(newEnd.getDate() + duration);
             
@@ -1283,38 +1319,32 @@
         // ==================== 键盘快捷键 ====================
         function setupKeyboardShortcuts() {
             document.addEventListener('keydown', (e) => {
-                // Ctrl+Z: 撤销
                 if (e.ctrlKey && e.key === 'z') {
                     e.preventDefault();
                     undo();
                 }
                 
-                // Ctrl+Y: 重做
                 if (e.ctrlKey && e.key === 'y') {
                     e.preventDefault();
                     redo();
                 }
                 
-                // Ctrl+F: 搜索
                 if (e.ctrlKey && e.key === 'f') {
                     e.preventDefault();
                     document.getElementById('searchInput').focus();
                 }
                 
-                // Ctrl+S: 保存
                 if (e.ctrlKey && e.key === 's') {
                     e.preventDefault();
                     autoSaveToLocal();
                     showToast('已保存到本地', 'success');
                 }
                 
-                // Esc: 关闭模态框
                 if (e.key === 'Escape') {
                     closeModal();
                     clearSearch();
                 }
                 
-                // ?: 显示快捷键
                 if (e.key === '?' && !e.ctrlKey && !e.altKey) {
                     toggleShortcuts();
                 }
@@ -1333,7 +1363,6 @@
             setupKeyboardShortcuts();
             loadFromLocal();
             
-            // 初始化历史记录
             if (history.length === 0) {
                 saveToHistory();
             }
@@ -1569,6 +1598,8 @@
 
             let html = `<div class="day-number">${day}</div>`;
             
+            html += '<div class="projects-container">';
+            
             dayProjects.forEach(project => {
                 const classes = getProjectItemClass(project);
                 const isRelated = activeFilterPerson && project.people.includes(activeFilterPerson);
@@ -1585,6 +1616,8 @@
                     ${isSelected ? '☑ ' : ''}${project.name}
                 </div>`;
             });
+            
+            html += '</div>';
 
             const hasImpact = dayProjects.some(p => p.phase === 'impact') || 
                              (selectedPeople.support.size > 0 && dayProjects.some(p => 
@@ -1592,11 +1625,18 @@
             
             if (hasImpact && !hasLeave) html += `<div class="impact-marker"></div>`;
 
+            if (dayProjects.length > 3) {
+                html += `<div class="project-count-badge">${dayProjects.length}</div>`;
+            }
+
             dayElement.innerHTML = html;
             
-            // 添加拖放事件
             if (!hasLeave) {
-                dayElement.onclick = () => openModal(dateStr);
+                dayElement.onclick = (e) => {
+                    if (e.target === dayElement || e.target.classList.contains('day-number') || e.target.classList.contains('projects-container')) {
+                        openModal(dateStr);
+                    }
+                };
                 dayElement.ondragover = (e) => handleDragOver(e, dateStr);
                 dayElement.ondragleave = handleDragLeave;
                 dayElement.ondrop = (e) => handleDrop(e, dateStr);
@@ -1636,10 +1676,8 @@
         function validateForm() {
             let isValid = true;
             
-            // 重置所有错误消息
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             
-            // 验证项目名称
             const name = document.getElementById('projectName').value.trim();
             const phase = document.getElementById('projectPhase').value;
             if (!name && phase !== 'leave') {
@@ -1647,14 +1685,12 @@
                 isValid = false;
             }
             
-            // 验证人员选择
             const checkboxes = document.querySelectorAll('#personCheckboxes input:checked');
             if (checkboxes.length === 0) {
                 document.getElementById('peopleError').style.display = 'block';
                 isValid = false;
             }
             
-            // 验证日期
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             
@@ -1679,7 +1715,6 @@
             return isValid;
         }
 
-        // ==================== 项目名称重复检查 ====================
         function checkDuplicateName(name, excludeId = null) {
             return projects.some(p => 
                 p.name.toLowerCase() === name.toLowerCase() && 
@@ -1703,7 +1738,6 @@
             document.getElementById('projectName').value = '';
             document.getElementById('deleteBtn').style.display = 'none';
             
-            // 重置错误消息
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             
             renderPersonCheckboxes(preselectPerson);
@@ -1735,7 +1769,6 @@
                 document.getElementById('equipmentCount').value = project.equipment;
             }
             
-            // 重置错误消息
             document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             
             updatePhaseOptions();
@@ -1777,7 +1810,6 @@
         }
 
         function saveProject() {
-            // 验证表单
             if (!validateForm()) {
                 showToast('请填写完整信息', 'error');
                 return;
@@ -1789,14 +1821,12 @@
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
 
-            // 检查项目名称重复
             if (phase !== 'leave' && checkDuplicateName(name, id ? parseInt(id) : null)) {
                 if (!confirm('已存在同名项目，是否继续保存？')) {
                     return;
                 }
             }
 
-            // 检查休假日冲突
             if (phase !== 'leave') {
                 const start = new Date(startDate);
                 const end = new Date(endDate);
