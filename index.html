@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>项目周期管理系统</title>
+    <title>项目周期管理系统 v2.0</title>
     <style>
         * {
             margin: 0;
@@ -63,6 +63,12 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         .btn-success {
             background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
             color: white;
@@ -107,6 +113,77 @@
             border: 2px solid #e0e0e0;
         }
 
+        /* 搜索栏 */
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-results {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: #f5f5f5;
+            transform: translateX(5px);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 批量操作 */
+        .batch-operations {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .batch-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        /* 撤销/重做按钮 */
+        .history-controls {
+            display: flex;
+            gap: 10px;
+        }
+
         /* ==================== 工作量视图 ==================== */
         .workload-simple {
             background: white;
@@ -130,7 +207,6 @@
             min-width: 1200px;
         }
 
-        /* 表格标题 - 显示月份 */
         .workload-table caption {
             caption-side: top;
             text-align: center;
@@ -153,7 +229,6 @@
             vertical-align: middle;
         }
 
-        /* 人员名称列 */
         .workload-table th:first-child,
         .workload-table td:first-child {
             width: 100px;
@@ -167,7 +242,6 @@
             box-shadow: 2px 0 5px rgba(0,0,0,0.1);
         }
 
-        /* 日期表头 */
         .workload-table th {
             background: #f5f5f5;
             color: #666;
@@ -180,7 +254,6 @@
             color: #d32f2f;
         }
 
-        /* 工作量状态颜色 */
         .workload-low {
             background: #c8e6c9;
             color: #2e7d32;
@@ -382,6 +455,12 @@
             opacity: 0.7;
         }
 
+        .calendar-day.dragging-over {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            border-style: dashed;
+        }
+
         .day-number {
             font-weight: bold;
             color: #333;
@@ -393,13 +472,18 @@
             padding: 2px 6px;
             border-radius: 4px;
             margin-top: 4px;
-            cursor: pointer;
+            cursor: move;
             transition: all 0.2s;
+            position: relative;
         }
 
         .project-item:hover {
             transform: translateX(3px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .project-item.dragging {
+            opacity: 0.5;
         }
 
         .project-item.related-project {
@@ -437,6 +521,10 @@
             background: #ffebee;
             color: #d32f2f;
             text-decoration: line-through;
+        }
+
+        .project-item input[type="checkbox"] {
+            margin-right: 4px;
         }
 
         @keyframes pulse {
@@ -524,6 +612,13 @@
             font-size: 1em;
         }
 
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
         .checkbox-group {
             display: flex;
             flex-wrap: wrap;
@@ -582,6 +677,7 @@
 
         .toast.success { background: #4caf50; }
         .toast.error { background: #f44336; }
+        .toast.warning { background: #ff9800; }
 
         .selected-count {
             font-size: 0.8em;
@@ -598,11 +694,46 @@
             font-size: 0.85em;
             color: #1976d2;
         }
+
+        .error-message {
+            color: #f44336;
+            font-size: 0.85em;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .keyboard-shortcuts {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.85em;
+            display: none;
+            z-index: 1500;
+        }
+
+        .keyboard-shortcuts.show {
+            display: block;
+        }
+
+        .shortcut-item {
+            margin: 5px 0;
+        }
+
+        .shortcut-key {
+            background: #555;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📊 项目周期管理系统</h1>
+        <h1>📊 项目周期管理系统 v2.0</h1>
         
         <div class="toolbar">
             <button class="btn btn-success" onclick="exportData()">
@@ -617,6 +748,38 @@
             <button class="btn btn-info" onclick="syncData()">
                 🔄 同步
             </button>
+            <div class="history-controls">
+                <button class="btn btn-secondary" id="undoBtn" onclick="undo()" disabled title="撤销 (Ctrl+Z)">
+                    ↶ 撤销
+                </button>
+                <button class="btn btn-secondary" id="redoBtn" onclick="redo()" disabled title="重做 (Ctrl+Y)">
+                    ↷ 重做
+                </button>
+            </div>
+            <button class="btn btn-secondary" onclick="toggleShortcuts()" title="按 ? 查看快捷键">
+                ⌨️ 快捷键
+            </button>
+        </div>
+
+        <!-- 搜索栏 -->
+        <div class="search-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索项目名称或人员..." onkeyup="searchProjects()">
+            <button class="btn btn-secondary" onclick="clearSearch()">清除</button>
+        </div>
+
+        <!-- 搜索结果 -->
+        <div class="search-results" id="searchResults"></div>
+
+        <!-- 批量操作 -->
+        <div class="batch-operations" id="batchOperations">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>已选中 <strong id="selectedCount">0</strong> 个项目</span>
+                <button class="btn btn-secondary" onclick="clearSelection()" style="padding: 6px 12px; font-size: 0.85em;">取消选择</button>
+            </div>
+            <div class="batch-btn-group">
+                <button class="btn btn-danger" onclick="batchDelete()">批量删除</button>
+                <button class="btn btn-info" onclick="batchCopy()">批量复制</button>
+            </div>
         </div>
 
         <div class="view-toggle">
@@ -638,9 +801,7 @@
             </div>
             
             <div style="overflow-x: auto;">
-                <table id="workloadTable" class="workload-table">
-                    <!-- 动态生成，包含caption显示月份 -->
-                </table>
+                <table id="workloadTable" class="workload-table"></table>
             </div>
         </div>
 
@@ -735,6 +896,7 @@
             <div class="form-group">
                 <label>项目名称</label>
                 <input type="text" id="projectName" placeholder="输入项目名称">
+                <div class="error-message" id="nameError">项目名称不能为空</div>
             </div>
 
             <div class="form-group">
@@ -769,12 +931,19 @@
             <div class="form-group">
                 <label>选择人员</label>
                 <div class="checkbox-group" id="personCheckboxes"></div>
+                <div class="error-message" id="peopleError">请至少选择一名人员</div>
             </div>
 
             <div class="form-group">
-                <label>日期范围</label>
+                <label>开始日期</label>
                 <input type="date" id="startDate">
-                <input type="date" id="endDate" style="margin-top: 10px;">
+                <div class="error-message" id="startDateError">请选择开始日期</div>
+            </div>
+
+            <div class="form-group">
+                <label>结束日期</label>
+                <input type="date" id="endDate">
+                <div class="error-message" id="endDateError">结束日期不能早于开始日期</div>
             </div>
 
             <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -790,13 +959,23 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- 快捷键提示 -->
+    <div class="keyboard-shortcuts" id="keyboardShortcuts">
+        <h4 style="margin-bottom: 10px;">⌨️ 键盘快捷键</h4>
+        <div class="shortcut-item"><span class="shortcut-key">Ctrl+Z</span> 撤销</div>
+        <div class="shortcut-item"><span class="shortcut-key">Ctrl+Y</span> 重做</div>
+        <div class="shortcut-item"><span class="shortcut-key">Ctrl+F</span> 搜索</div>
+        <div class="shortcut-item"><span class="shortcut-key">Ctrl+S</span> 保存到本地</div>
+        <div class="shortcut-item"><span class="shortcut-key">Esc</span> 关闭弹窗</div>
+        <div class="shortcut-item"><span class="shortcut-key">?</span> 显示/隐藏此帮助</div>
+    </div>
+
     <script>
         // ==================== 项目身份定义 ====================
-        const pmList = ['鱼蛋', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles'];
-        const clientList = ['鱼蛋', 'Huan', 'Daizy'];
-        const supportList = ['Daizy', '鱼蛋', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles', 'Lizzy', 'Ella'];
+        const pmList = ['鱼蛋', 'Huan', '潘潘', 'Kathy', '思璇', 'Fenny', 'Miles'];
+        const clientList = ['鱼蛋', 'Huan', 'Daizy', 'Fenny'];
+        const supportList = ['Daizy', '鱼蛋', 'Huan', '潘潘', 'Kathy', '思璇', 'Miles', 'Lizzy', 'Fenny'];
         
-        // 需要统计工作量的7人
         const workloadPeople = ['鱼蛋', 'Huan', 'Daizy', '潘潘', 'Kathy', '思璇', 'Miles'];
         
         // ==================== 全局状态 ====================
@@ -810,11 +989,354 @@
         let activeFilterPerson = null;
         let projects = [];
         let currentView = 'calendar';
+        let selectedProjects = new Set();
+        let draggedProject = null;
+
+        // ==================== 历史记录（撤销/重做） ====================
+        let history = [];
+        let historyIndex = -1;
+        const MAX_HISTORY = 50;
+
+        function saveToHistory() {
+            // 移除当前位置之后的所有历史
+            history = history.slice(0, historyIndex + 1);
+            
+            // 添加新状态
+            history.push(JSON.parse(JSON.stringify(projects)));
+            
+            // 限制历史记录数量
+            if (history.length > MAX_HISTORY) {
+                history.shift();
+            } else {
+                historyIndex++;
+            }
+            
+            updateHistoryButtons();
+            autoSaveToLocal();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                projects = JSON.parse(JSON.stringify(history[historyIndex]));
+                renderCurrentView();
+                updateHistoryButtons();
+                showToast('已撤销', 'success');
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                projects = JSON.parse(JSON.stringify(history[historyIndex]));
+                renderCurrentView();
+                updateHistoryButtons();
+                showToast('已重做', 'success');
+            }
+        }
+
+        function updateHistoryButtons() {
+            document.getElementById('undoBtn').disabled = historyIndex <= 0;
+            document.getElementById('redoBtn').disabled = historyIndex >= history.length - 1;
+        }
+
+        // ==================== 自动保存到本地存储 ====================
+        function autoSaveToLocal() {
+            try {
+                const data = {
+                    projects: projects,
+                    selectedPeople: {
+                        pm: selectedPeople.pm,
+                        client: selectedPeople.client,
+                        support: Array.from(selectedPeople.support)
+                    },
+                    currentDate: currentDate.toISOString(),
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem('projectsBackup', JSON.stringify(data));
+            } catch (e) {
+                console.warn('自动保存失败:', e);
+            }
+        }
+
+        function loadFromLocal() {
+            try {
+                const saved = localStorage.getItem('projectsBackup');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (confirm('发现本地备份数据，是否恢复？\n备份时间: ' + new Date(data.timestamp).toLocaleString())) {
+                        projects = data.projects || [];
+                        if (data.selectedPeople) {
+                            selectedPeople.pm = data.selectedPeople.pm || null;
+                            selectedPeople.client = data.selectedPeople.client || null;
+                            selectedPeople.support = new Set(data.selectedPeople.support || []);
+                        }
+                        if (data.currentDate) currentDate = new Date(data.currentDate);
+                        
+                        saveToHistory();
+                        renderPeople();
+                        renderCurrentView();
+                        showToast('已恢复本地备份', 'success');
+                    }
+                }
+            } catch (e) {
+                console.warn('加载本地备份失败:', e);
+            }
+        }
+
+        // ==================== 搜索功能 ====================
+        function searchProjects() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (!query) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+            
+            const results = projects.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.people.some(person => person.toLowerCase().includes(query))
+            );
+            
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div style="color: #999; text-align: center;">未找到匹配的项目</div>';
+                resultsDiv.style.display = 'block';
+                return;
+            }
+            
+            let html = '<h4 style="margin-bottom: 10px;">搜索结果 (' + results.length + ')</h4>';
+            results.forEach(project => {
+                const dateRange = project.startDate + ' ~ ' + project.endDate;
+                html += `<div class="search-result-item" onclick="jumpToProject(${project.id})">
+                    <strong>${project.name}</strong><br>
+                    <small style="color: #666;">${project.people.join(', ')} | ${dateRange}</small>
+                </div>`;
+            });
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').style.display = 'none';
+        }
+
+        function jumpToProject(projectId) {
+            const project = projects.find(p => p.id === projectId);
+            if (!project) return;
+            
+            // 切换到日历视图
+            showView('calendar');
+            
+            // 跳转到项目所在月份
+            currentDate = new Date(project.startDate);
+            renderCalendar();
+            
+            // 高亮显示项目
+            setTimeout(() => {
+                editProject(projectId);
+            }, 300);
+            
+            clearSearch();
+        }
+
+        // ==================== 批量操作 ====================
+        function toggleProjectSelection(projectId, event) {
+            event.stopPropagation();
+            
+            if (selectedProjects.has(projectId)) {
+                selectedProjects.delete(projectId);
+            } else {
+                selectedProjects.add(projectId);
+            }
+            
+            updateBatchOperations();
+            renderCurrentView();
+        }
+
+        function updateBatchOperations() {
+            const batchDiv = document.getElementById('batchOperations');
+            const count = selectedProjects.size;
+            
+            if (count > 0) {
+                batchDiv.style.display = 'block';
+                document.getElementById('selectedCount').textContent = count;
+            } else {
+                batchDiv.style.display = 'none';
+            }
+        }
+
+        function clearSelection() {
+            selectedProjects.clear();
+            updateBatchOperations();
+            renderCurrentView();
+        }
+
+        function batchDelete() {
+            if (selectedProjects.size === 0) return;
+            
+            if (!confirm(`确定要删除选中的 ${selectedProjects.size} 个项目吗？`)) return;
+            
+            projects = projects.filter(p => !selectedProjects.has(p.id));
+            selectedProjects.clear();
+            updateBatchOperations();
+            saveToHistory();
+            renderCurrentView();
+            showToast('批量删除成功', 'success');
+        }
+
+        function batchCopy() {
+            if (selectedProjects.size === 0) return;
+            
+            const days = prompt('请输入要复制到多少天后（例如：7 表示一周后）：');
+            if (!days || isNaN(days)) return;
+            
+            const offset = parseInt(days);
+            const copiedProjects = [];
+            
+            selectedProjects.forEach(id => {
+                const project = projects.find(p => p.id === id);
+                if (project) {
+                    const startDate = new Date(project.startDate);
+                    const endDate = new Date(project.endDate);
+                    startDate.setDate(startDate.getDate() + offset);
+                    endDate.setDate(endDate.getDate() + offset);
+                    
+                    copiedProjects.push({
+                        ...project,
+                        id: Date.now() + Math.random(),
+                        name: project.name + ' (副本)',
+                        startDate: startDate.toISOString().split('T')[0],
+                        endDate: endDate.toISOString().split('T')[0]
+                    });
+                }
+            });
+            
+            projects.push(...copiedProjects);
+            selectedProjects.clear();
+            updateBatchOperations();
+            saveToHistory();
+            renderCurrentView();
+            showToast(`已复制 ${copiedProjects.length} 个项目`, 'success');
+        }
+
+        // ==================== 拖拽功能 ====================
+        function enableDragDrop() {
+            // 在渲染项目时添加拖拽事件
+        }
+
+        function handleDragStart(e, projectId) {
+            draggedProject = projectId;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedProject = null;
+            
+            // 移除所有拖拽样式
+            document.querySelectorAll('.calendar-day').forEach(day => {
+                day.classList.remove('dragging-over');
+            });
+        }
+
+        function handleDragOver(e, dateStr) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('dragging-over');
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('dragging-over');
+        }
+
+        function handleDrop(e, newStartDate) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragging-over');
+            
+            if (!draggedProject) return;
+            
+            const project = projects.find(p => p.id === draggedProject);
+            if (!project) return;
+            
+            // 计算日期差
+            const oldStart = new Date(project.startDate);
+            const oldEnd = new Date(project.endDate);
+            const newStart = new Date(newStartDate);
+            const duration = (oldEnd - oldStart) / (1000 * 60 * 60 * 24);
+            
+            // 更新日期
+            const newEnd = new Date(newStart);
+            newEnd.setDate(newEnd.getDate() + duration);
+            
+            project.startDate = newStart.toISOString().split('T')[0];
+            project.endDate = newEnd.toISOString().split('T')[0];
+            
+            saveToHistory();
+            renderCurrentView();
+            showToast('项目日期已更新', 'success');
+        }
+
+        // ==================== 键盘快捷键 ====================
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Ctrl+Z: 撤销
+                if (e.ctrlKey && e.key === 'z') {
+                    e.preventDefault();
+                    undo();
+                }
+                
+                // Ctrl+Y: 重做
+                if (e.ctrlKey && e.key === 'y') {
+                    e.preventDefault();
+                    redo();
+                }
+                
+                // Ctrl+F: 搜索
+                if (e.ctrlKey && e.key === 'f') {
+                    e.preventDefault();
+                    document.getElementById('searchInput').focus();
+                }
+                
+                // Ctrl+S: 保存
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    autoSaveToLocal();
+                    showToast('已保存到本地', 'success');
+                }
+                
+                // Esc: 关闭模态框
+                if (e.key === 'Escape') {
+                    closeModal();
+                    clearSearch();
+                }
+                
+                // ?: 显示快捷键
+                if (e.key === '?' && !e.ctrlKey && !e.altKey) {
+                    toggleShortcuts();
+                }
+            });
+        }
+
+        function toggleShortcuts() {
+            const shortcuts = document.getElementById('keyboardShortcuts');
+            shortcuts.classList.toggle('show');
+        }
 
         // ==================== 初始化 ====================
         function init() {
             renderPeople();
             renderCalendar();
+            setupKeyboardShortcuts();
+            loadFromLocal();
+            
+            // 初始化历史记录
+            if (history.length === 0) {
+                saveToHistory();
+            }
         }
 
         // ==================== 视图切换 ====================
@@ -834,6 +1356,14 @@
             }
         }
 
+        function renderCurrentView() {
+            if (currentView === 'calendar') {
+                renderCalendar();
+            } else {
+                renderWorkload();
+            }
+        }
+
         // ==================== 工作量视图 ====================
         function changeWorkloadMonth(delta) {
             workloadDate.setMonth(workloadDate.getMonth() + delta);
@@ -847,10 +1377,8 @@
             
             const table = document.getElementById('workloadTable');
             
-            // 构建表格标题（显示月份）
             let captionHTML = `<caption>${year}年${month + 1}月 工作量统计</caption>`;
             
-            // 构建表头
             let theadHTML = '<thead><tr><th>人员</th>';
             for (let d = 1; d <= daysInMonth; d++) {
                 const date = new Date(year, month, d);
@@ -860,7 +1388,6 @@
             }
             theadHTML += '</tr></thead>';
             
-            // 构建表体
             let tbodyHTML = '<tbody>';
             
             workloadPeople.forEach(person => {
@@ -1047,9 +1574,15 @@
                 const isRelated = activeFilterPerson && project.people.includes(activeFilterPerson);
                 const relatedClass = isRelated ? 'related-project' : '';
                 const title = `${project.name} - ${project.people.join(', ')}`;
+                const isSelected = selectedProjects.has(project.id);
                 
-                html += `<div class="project-item ${classes} ${relatedClass}" title="${title}" onclick="event.stopPropagation(); editProject(${project.id})">
-                    ${project.name}
+                html += `<div class="project-item ${classes} ${relatedClass}" 
+                    title="${title}" 
+                    draggable="true"
+                    ondragstart="handleDragStart(event, ${project.id})"
+                    ondragend="handleDragEnd(event)"
+                    onclick="event.stopPropagation(); if(event.ctrlKey || event.metaKey) { toggleProjectSelection(${project.id}, event); } else { editProject(${project.id}); }">
+                    ${isSelected ? '☑ ' : ''}${project.name}
                 </div>`;
             });
 
@@ -1060,7 +1593,14 @@
             if (hasImpact && !hasLeave) html += `<div class="impact-marker"></div>`;
 
             dayElement.innerHTML = html;
-            if (!hasLeave) dayElement.onclick = () => openModal(dateStr);
+            
+            // 添加拖放事件
+            if (!hasLeave) {
+                dayElement.onclick = () => openModal(dateStr);
+                dayElement.ondragover = (e) => handleDragOver(e, dateStr);
+                dayElement.ondragleave = handleDragLeave;
+                dayElement.ondrop = (e) => handleDrop(e, dateStr);
+            }
             
             return dayElement;
         }
@@ -1092,6 +1632,61 @@
             renderCalendar();
         }
 
+        // ==================== 表单验证 ====================
+        function validateForm() {
+            let isValid = true;
+            
+            // 重置所有错误消息
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+            
+            // 验证项目名称
+            const name = document.getElementById('projectName').value.trim();
+            const phase = document.getElementById('projectPhase').value;
+            if (!name && phase !== 'leave') {
+                document.getElementById('nameError').style.display = 'block';
+                isValid = false;
+            }
+            
+            // 验证人员选择
+            const checkboxes = document.querySelectorAll('#personCheckboxes input:checked');
+            if (checkboxes.length === 0) {
+                document.getElementById('peopleError').style.display = 'block';
+                isValid = false;
+            }
+            
+            // 验证日期
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate) {
+                document.getElementById('startDateError').textContent = '请选择开始日期';
+                document.getElementById('startDateError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (!endDate) {
+                document.getElementById('endDateError').textContent = '请选择结束日期';
+                document.getElementById('endDateError').style.display = 'block';
+                isValid = false;
+            }
+            
+            if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+                document.getElementById('endDateError').textContent = '结束日期不能早于开始日期';
+                document.getElementById('endDateError').style.display = 'block';
+                isValid = false;
+            }
+            
+            return isValid;
+        }
+
+        // ==================== 项目名称重复检查 ====================
+        function checkDuplicateName(name, excludeId = null) {
+            return projects.some(p => 
+                p.name.toLowerCase() === name.toLowerCase() && 
+                p.id !== excludeId
+            );
+        }
+
         // ==================== 模态框功能 ====================
         function openModal(dateStr = null, preselectPerson = null) {
             if (dateStr) {
@@ -1105,7 +1700,11 @@
             document.getElementById('projectModal').style.display = 'flex';
             document.getElementById('modalTitle').textContent = '添加新项目';
             document.getElementById('projectId').value = '';
+            document.getElementById('projectName').value = '';
             document.getElementById('deleteBtn').style.display = 'none';
+            
+            // 重置错误消息
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             
             renderPersonCheckboxes(preselectPerson);
             updatePhaseOptions();
@@ -1113,6 +1712,9 @@
             if (dateStr) {
                 document.getElementById('startDate').value = dateStr;
                 document.getElementById('endDate').value = dateStr;
+            } else {
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
             }
         }
 
@@ -1132,6 +1734,9 @@
             if (project.equipment) {
                 document.getElementById('equipmentCount').value = project.equipment;
             }
+            
+            // 重置错误消息
+            document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
             
             updatePhaseOptions();
             renderPersonCheckboxes(null, project.people);
@@ -1172,24 +1777,33 @@
         }
 
         function saveProject() {
-            const id = document.getElementById('projectId').value;
-            const name = document.getElementById('projectName').value;
-            const phase = document.getElementById('projectPhase').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-
-            if (!name || !startDate || !endDate) {
+            // 验证表单
+            if (!validateForm()) {
                 showToast('请填写完整信息', 'error');
                 return;
             }
 
+            const id = document.getElementById('projectId').value;
+            const name = document.getElementById('projectName').value.trim();
+            const phase = document.getElementById('projectPhase').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            // 检查项目名称重复
+            if (phase !== 'leave' && checkDuplicateName(name, id ? parseInt(id) : null)) {
+                if (!confirm('已存在同名项目，是否继续保存？')) {
+                    return;
+                }
+            }
+
+            // 检查休假日冲突
             if (phase !== 'leave') {
                 const start = new Date(startDate);
                 const end = new Date(endDate);
                 for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
                     const dateStr = d.toISOString().split('T')[0];
                     const dayProjects = getDayProjects(dateStr);
-                    if (dayProjects.some(p => p.phase === 'leave')) {
+                    if (dayProjects.some(p => p.phase === 'leave' && (!id || p.id !== parseInt(id)))) {
                         showToast(`日期范围包含休假日 (${dateStr})`, 'error');
                         return;
                     }
@@ -1198,11 +1812,6 @@
 
             const checkboxes = document.querySelectorAll('#personCheckboxes input:checked');
             const selectedPeopleList = Array.from(checkboxes).map(cb => cb.value);
-
-            if (selectedPeopleList.length === 0) {
-                showToast('请至少选择一名人员', 'error');
-                return;
-            }
 
             const projectData = {
                 id: id ? parseInt(id) : Date.now(),
@@ -1224,8 +1833,8 @@
             }
 
             closeModal();
-            if (currentView === 'calendar') renderCalendar();
-            else renderWorkload();
+            saveToHistory();
+            renderCurrentView();
         }
 
         function deleteProject() {
@@ -1236,15 +1845,15 @@
             
             projects = projects.filter(p => p.id !== parseInt(id));
             closeModal();
-            if (currentView === 'calendar') renderCalendar();
-            else renderWorkload();
+            saveToHistory();
+            renderCurrentView();
             showToast('项目已删除', 'success');
         }
 
         // ==================== 导入导出同步 ====================
         function exportData() {
             const data = {
-                version: '1.0',
+                version: '2.0',
                 exportTime: new Date().toISOString(),
                 projects: projects,
                 selectedPeople: {
@@ -1282,9 +1891,9 @@
                         }
                         if (data.currentDate) currentDate = new Date(data.currentDate);
                         
+                        saveToHistory();
                         renderPeople();
-                        if (currentView === 'calendar') renderCalendar();
-                        else renderWorkload();
+                        renderCurrentView();
                         showToast('数据导入成功！', 'success');
                     }
                 } catch (err) {
@@ -1308,9 +1917,9 @@
                         selectedPeople.client = data.selectedPeople.client || null;
                         selectedPeople.support = new Set(data.selectedPeople.support || []);
                     }
+                    saveToHistory();
                     renderPeople();
-                    if (currentView === 'calendar') renderCalendar();
-                    else renderWorkload();
+                    renderCurrentView();
                     showToast('同步成功！', 'success');
                 }
             } catch (err) {
